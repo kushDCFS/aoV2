@@ -83,7 +83,7 @@ export default function OurMission() {
           <div>
             <h3 className="text-lg font-bold text-slate-900">Democratizing Knowledge, Not Selling Services</h3>
             <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-              Please note that College Admissions Insider is a self-service resources directory. We do not solicit personal details, sell consulting packages, or offer 1-on-1 editing. We provide the strategies and tools; you provide the dedication and drive to write your own future.
+              Please note that The Equity Admissions Project is a self-service resources directory. We do not solicit personal details, sell consulting packages, or offer 1-on-1 editing. We provide the strategies and tools; you provide the dedication and drive to write your own future.
             </p>
           </div>
         </section>

@@ -41,7 +41,7 @@ export default function Layout() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
                   <Compass className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-bold text-white text-sm sm:text-base">College Admissions Insider</span>
+                <span className="font-bold text-white text-sm sm:text-base">The Equity Admissions Project</span>
               </Link>
 
               <div className="hidden lg:flex items-center gap-0.5">
@@ -105,7 +105,7 @@ export default function Layout() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
                 <Compass className="h-5 w-5 text-white" />
               </div>
-              <span className="font-bold text-white">College Admissions Insider</span>
+              <span className="font-bold text-white">The Equity Admissions Project</span>
             </div>
             <p className="text-sm text-slate-400 max-w-2xl">
               A 100% free, self-service resource hub providing structural frameworks, templates, and curated tools for under-resourced students. No coaching, no paywalls, no gatekeeping.

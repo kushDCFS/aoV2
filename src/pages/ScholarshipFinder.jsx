@@ -8,7 +8,7 @@ export default function ScholarshipFinder() {
     <div>
       <PageHeader
         title="Scholarship Finder"
-        subtitle="A curated table of major national scholarships targeting under-resourced and low-income students, plus a guide to finding hyper-local awards with lower competition."
+        subtitle="A curated table of major national scholarships targeting high-achieving candidates, plus a guide to finding hyper-local awards with lower competition."
         icon={Award}
       />
 
@@ -17,7 +17,7 @@ export default function ScholarshipFinder() {
         <section>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Major National Scholarships</h2>
           <p className="text-slate-500 mb-6 max-w-3xl">
-            These are the highest-value, most reputable scholarships for under-resourced students. Start with these —
+            These are the highest-value, most reputable scholarships for ambitious scholars. Start with these —
             they have the largest awards and the most established support networks.
           </p>
 

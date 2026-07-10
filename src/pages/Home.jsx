@@ -22,7 +22,7 @@ const sections = [
     to: "/scholarship-finder",
     icon: Award,
     title: "Scholarship Finder",
-    description: "A curated table of major scholarships for under-resourced students, plus a guide to finding hyper-local awards.",
+    description: "A curated table of major scholarships for ambitious scholars, plus a guide to finding hyper-local awards.",
     color: "bg-emerald-600",
   },
   {
@@ -58,7 +58,7 @@ export default function Home() {
               Movement for Admissions Pathways and Success.
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-300 leading-relaxed">
-              Free, actionable, self-serve playbooks for under-resourced students.
+              Free, actionable, self-serve playbooks for self-driven students.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -133,9 +133,10 @@ export default function Home() {
               {[
                 "No sign-up or account required",
                 "Every resource is free or $0",
+                "Collects zero personal data (privacy-compliant)",
                 "Copy/paste templates you can use today",
                 "Structured frameworks, not vague advice",
-                "Built specifically for under-resourced students",
+                "Built specifically for independent scholars",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3">
                   <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600" />

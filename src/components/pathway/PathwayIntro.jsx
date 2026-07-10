@@ -13,8 +13,8 @@ export default function PathwayIntro({ onKnow, onQuiz }) {
           Build your extracurricular plan
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-slate-500">
-          Tell us what you want to study and we'll match you with free coaching, prep programs, and extracurriculars
-          designed to help under-resourced students stand out.
+          Tell us what you want to study and we'll match you with prep programs, projects, and extracurriculars
+          designed to help self-driven students stand out.
         </p>
       </motion.div>
 

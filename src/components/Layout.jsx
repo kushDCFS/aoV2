@@ -108,7 +108,7 @@ export default function Layout() {
               <span className="font-bold text-white">Movement for Admissions Pathways and Success</span>
             </div>
             <p className="text-sm text-slate-400 max-w-2xl">
-              A 100% free, self-service resource hub providing structural frameworks, templates, and curated tools for under-resourced students. No coaching, no paywalls, no gatekeeping.
+              A premium, open-access, zero-barrier college playbook designed to bring absolute transparency to the admissions process for all self-driven students.
             </p>
             <p className="mt-6 text-xs text-slate-500">
               Built to democratize college admissions knowledge. All resources are free or low-cost.

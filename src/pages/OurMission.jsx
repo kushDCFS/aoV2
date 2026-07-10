@@ -7,7 +7,7 @@ const pillars = [
   {
     icon: Heart,
     title: "Admissions Equity",
-    description: "Work toward total equity by providing under-resourced students the same blueprints and frameworks that expensive consulting firms keep behind paywalls.",
+    description: "Work toward total equity by providing ambitious candidates the same blueprints and frameworks that expensive consulting firms keep behind paywalls.",
     color: "bg-blue-600",
   },
   {
@@ -19,7 +19,7 @@ const pillars = [
   {
     icon: Sparkles,
     title: "100% Free & Self-Serve",
-    description: "No sign-up barriers, no memberships, and no hidden coaching packages. Actionable, copy-pasteable templates designed for self-directed success.",
+    description: "No sign-ups, zero personal data collected, and no hidden coaching packages. Fully compliant with institutional privacy standards.",
     color: "bg-emerald-600",
   },
 ];
@@ -41,7 +41,7 @@ export default function OurMission() {
               Dismantling Barriers to Higher Education
             </h2>
             <p className="text-slate-600 leading-relaxed">
-              Every year, wealthy applicants spend thousands of dollars on private college admissions counseling. This systemic gap leaves high-achieving, under-resourced students behind.
+              Every year, wealthy applicants spend thousands of dollars on private college admissions counseling. This systemic gap creates an uneven field for high-achieving, self-driven candidates.
             </p>
             <p className="text-slate-600 leading-relaxed">
               Our core goal is to work toward **total equity in the college admissions process**. We believe that access to guides on building high-impact extracurriculars, scoring high on standardized tests, and compiling strong applications should be democratic, transparent, and completely free.

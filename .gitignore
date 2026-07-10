@@ -36,3 +36,10 @@ desktop.ini
 Personal Vault.lnk
 Getting started with OneDrive.pdf
 
+# Accidental User Profile Backups
+Desktop/
+Documents/
+Pictures/
+Videos/
+
+

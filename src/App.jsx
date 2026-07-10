@@ -12,7 +12,9 @@ import AcademicPaths from './pages/AcademicPaths';
 import ExtracurricularTracks from './pages/ExtracurricularTracks';
 import ScholarshipFinder from './pages/ScholarshipFinder';
 import OutreachLab from './pages/OutreachLab';
+import OurMission from './pages/OurMission';
 import Layout from './components/Layout';
+
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/extracurricular-tracks" element={<ExtracurricularTracks />} />
         <Route path="/scholarship-finder" element={<ScholarshipFinder />} />
         <Route path="/outreach-lab" element={<OutreachLab />} />
+        <Route path="/our-mission" element={<OurMission />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

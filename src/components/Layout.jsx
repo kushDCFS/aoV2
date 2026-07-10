@@ -8,6 +8,7 @@ const navLinks = [
   { to: "/extracurricular-tracks", label: "Extracurricular Tracks" },
   { to: "/scholarship-finder", label: "Scholarship Finder" },
   { to: "/outreach-lab", label: "The Outreach Lab" },
+  { to: "/our-mission", label: "Our Mission" },
 ];
 
 export default function Layout() {

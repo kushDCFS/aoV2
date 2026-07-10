@@ -1,0 +1,16 @@
+Agents' Last Exam — Difficulty Self-Test
+Task: pdf_pii_redaction_instance_3
+Run date: 2026-06-28 20:16 UTC
+Model: Claude (Opus-class agent)
+Harness: Cowork / Claude-Code-style file+shell agent
+
+Method: independent solve from the task prompt only (no access to the gold
+reference), then graded by grade_all.py against the gold reference.
+
+Attempt produced 10 redactions across 2 pages.
+Grader result:
+TASK3: 3/3 rules passed  (PASS)
+
+Interpretation: a strong agent passes all 3 checks (>60%). This confirms
+NEAR-TERM difficulty. Against the mid-tier reference agent ALE classifies
+against (Sonnet-4.6 / GPT-5.5 low-effort), expect roughly 40-60%.

@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Shred Tracker",
+  "schemaVersion": 1,
+  "description": "Personal fitness tracker for cutting to shredded abs — daily calories/macros, food log with quick-add presets, workout log with sets/reps/weight, 14-day progress charts, and editable targets. Data persists in localStorage."
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shred Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --card: #ffffff;
+  --border: #ececec;
+  --text: #1a1a1a;
+  --muted: #888;
+  --accent: #111;
+  --accent-soft: #f4f4f4;
+  --cal: #111;
+  --protein: #2563eb;
+  --carbs: #f59e0b;
+  --fat: #ef4444;
+  --good: #16a34a;
+  --danger: #dc2626;
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding: 24px 20px 60px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.tab {
+  flex: 1;
+  min-width: 80px;
+  border: none;
+  background: transparent;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab.active {
+  background: var(--accent);
+  color: white;
+}
+.tab:hover:not(.active) { background: var(--accent-soft); color: var(--text); }
+.section { display: none; }
+.section.active { display: block; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 14px;
+}
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.date-nav button {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text);
+  transition: background 0.15s;
+}
+.date-nav button:hover { background: var(--accent-soft); }
+.date-display {
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+}
+.date-display .day-name { color: var(--muted); font-weight: 400; font-size: 13px; }
+.macro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.macro-card {
+  padding: 14px;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.macro-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.macro-value {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.macro-value .target {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.macro-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.macro-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.macro-cal .macro-bar-fill { background: var(--cal); }
+.macro-protein .macro-bar-fill { background: var(--protein); }
+.macro-carbs .macro-bar-fill { background: var(--carbs); }
+.macro-fat .macro-bar-fill { background: var(--fat); }
+.cal-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.cal-big {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.cal-target { color: var(--muted); font-size: 14px; }
+.cal-remaining {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.cal-remaining .num { font-weight: 600; color: var(--text); }
+.entry-list { list-style: none; }
+.entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.entry:last-child { border-bottom: none; }
+.entry-info { flex: 1; min-width: 0; }
+.entry-name { font-weight: 500; font-size: 14px; }
+.entry-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.entry-cal { font-weight: 600; font-size: 14px; margin-right: 12px; white-space: nowrap; }
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.delete-btn:hover { color: var(--danger); background: #fef2f2; }
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 24px 0;
+  font-size: 13px;
+}
+.form-row {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.form-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.form-row.cols-3 { grid-template-columns: 2fr 1fr 1fr; }
+label {
+  font-size: 12px;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+input, select, textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+button.primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+button.primary:hover { opacity: 0.85; }
+button.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+button.secondary:hover { background: var(--accent-soft); }
+.btn-row { display: flex; gap: 8px; margin-top: 4px; }
+.btn-row button { flex: 1; }
+.quick-foods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.chip {
+  background: var(--accent-soft);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text);
+  transition: background 0.15s;
+}
+.chip:hover { background: var(--border); }
+.workout-exercise {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.workout-exercise h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.set-row {
+  display: grid;
+  grid-template-columns: 30px 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+}
+.set-row .set-num { color: var(--muted); font-weight: 500; }
+.set-row input { padding: 6px 8px; font-size: 13px; }
+.add-set-btn {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  width: 100%;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.add-set-btn:hover { color: var(--text); border-color: var(--text); }
+.chart-container {
+  position: relative;
+  height: 220px;
+  margin-top: 8px;
+}
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-label { font-size: 14px; }
+.settings-row input { width: 100px; text-align: right; }
+.macros-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+.summary-stat {
+  text-align: center;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+.summary-stat .label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.summary-stat .value {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 2px;
+  letter-spacing: -0.02em;
+}
+.preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 6px;
+}
+.streak-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.streak-num {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+@media (max-width: 600px) {
+  body { padding: 16px 14px 60px; }
+  .form-row.cols-4 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr; }
+  .cal-big { font-size: 30px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Kush's Shred Tracker</h1>
+    <div class="subtitle" id="headerSubtitle">Cutting to shredded abs · 154 lb · 5'11"</div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="dashboard">Today</button>
+  <button class="tab" data-tab="food">Food</button>
+  <button class="tab" data-tab="workout">Workout</button>
+  <button class="tab" data-tab="progress">Progress</button>
+  <button class="tab" data-tab="settings">Settings</button>
+</div>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="section active">
+  <div class="date-nav">
+    <button id="prevDay">‹</button>
+    <div class="date-display">
+      <div id="dateMain">Today</div>
+      <div class="day-name" id="dateSub"></div>
+    </div>
+    <button id="nextDay">›</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Calories</div>
+    <div class="cal-summary">
+      <div class="cal-big" id="calMain">0</div>
+      <div class="cal-target">of <span id="calTarget">2000</span></div>
+    </div>
+    <div class="cal-remaining"><span class="num" id="calRemaining">2000</span> remaining</div>
+    <div class="macro-bar macro-cal"><div class="macro-bar-fill" id="calBar" style="width:0%"></div></div>
+  </div>
+
+  <div class="macro-grid">
+    <div class="macro-card macro-protein">
+      <div class="macro-label">Protein</div>
+      <div class="macro-value"><span id="proteinMain">0</span><span class="target">g / <span id="proteinTarget">180</span></span></div>
+      <div class="macro-bar"><div class="macro-bar-fill" id="proteinBar" style="width:0%"></div></div>
+    </div>
+    <div class="macro-card macro-carbs">
+      <div class="macro-label">Carbs</div>
+      <div class="macro-value"><span id="carbsMain">0</span><span class="target">g / <span id="carbsTarget">150</span></span></div>
+      <div class="macro-bar"><div class="macro-bar-fill" id="carbsBar" style="width:0%"></div></div>
+    </div>
+    <div class="macro-card macro-fat">
+      <div class="macro-label">Fat</div>
+      <div class="macro-value"><span id="fatMain">0</span><span class="target">g / <span id="fatTarget">60</span></span></div>
+      <div class="macro-bar"><div class="macro-bar-fill" id="fatBar" style="width:0%"></div></div>
+    </div>
+    <div class="macro-card">
+      <div class="macro-label">Workout</div>
+      <div class="macro-value" id="workoutSummary">—</div>
+      <div class="macro-bar"><div class="macro-bar-fill" style="background:var(--good);width:0%" id="workoutBar"></div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;background:linear-gradient(135deg,#111,#333);color:white;border:none;">
+    <div class="card-title" style="color:rgba(255,255,255,0.6);margin-bottom:10px;">Abs by July</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <div style="font-size:30px;font-weight:700;letter-spacing:-0.02em;line-height:1;"><span id="daysToGoal">—</span> <span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.6);">days left</span></div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:6px;" id="goalProjection">Logging weight will show projection</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.05em;">Target</div>
+        <div style="font-size:18px;font-weight:600;" id="goalTargetWeight">146 lb</div>
+      </div>
+    </div>
+    <div style="height:6px;background:rgba(255,255,255,0.15);border-radius:3px;margin-top:12px;overflow:hidden;">
+      <div id="goalProgressBar" style="height:100%;background:#22c55e;border-radius:3px;width:0%;transition:width .3s;"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Weight check-in</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <div style="flex:1;">
+        <label>Today's weight (lb)</label>
+        <input type="number" id="weightInput" step="0.1" placeholder="e.g. 153.8" />
+      </div>
+      <button class="primary" id="logWeightBtn">Log</button>
+    </div>
+    <div id="weightHistory" style="font-size:12px;color:var(--muted);margin-top:10px;"></div>
+  </div>
+
+  <div class="card streak-card" style="margin-top:16px;">
+    <div>
+      <div class="card-title" style="margin-bottom:4px;">Streak</div>
+      <div style="font-size:12px;color:var(--muted);">Days hitting protein target</div>
+    </div>
+    <div class="streak-num" id="streakNum">0</div>
+  </div>
+</section>
+
+<!-- FOOD -->
+<section id="food" class="section">
+  <div class="card">
+    <div class="card-title">Add Food</div>
+    <div class="form-row">
+      <div>
+        <label>What did you eat? <span style="color:var(--muted);font-weight:400;">(be specific — e.g. "200g grilled chicken breast and 1 cup white rice")</span></label>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="foodName" placeholder="e.g. 2 scrambled eggs with 1 slice toast" style="flex:1;" />
+          <button class="primary" id="estimateBtn" title="Estimate macros with AI">✨ Estimate</button>
+        </div>
+        <div id="estimateStatus" style="font-size:12px;color:var(--muted);margin-top:6px;min-height:16px;"></div>
+      </div>
+    </div>
+    <div class="form-row cols-4">
+      <div>
+        <label>Calories</label>
+        <input type="number" id="foodCal" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Protein (g)</label>
+        <input type="number" id="foodProtein" min="0" step="0.1" placeholder="0" />
+      </div>
+      <div>
+        <label>Carbs (g)</label>
+        <input type="number" id="foodCarbs" min="0" step="0.1" placeholder="0" />
+      </div>
+      <div>
+        <label>Fat (g)</label>
+        <input type="number" id="foodFat" min="0" step="0.1" placeholder="0" />
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div>
+        <label>Meal</label>
+        <select id="foodMeal">
+          <option value="Breakfast">Breakfast</option>
+          <option value="Lunch">Lunch</option>
+          <option value="Dinner">Dinner</option>
+          <option value="Snack">Snack</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:end;gap:6px;">
+        <button class="primary" id="addFoodBtn" style="flex:1;">Add</button>
+        <button class="secondary" id="savePresetBtn" title="Save as quick-add">★</button>
+      </div>
+    </div>
+    <div>
+      <label style="margin-top:6px;">Quick add</label>
+      <div class="quick-foods" id="quickFoods"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Today's Food</div>
+    <ul class="entry-list" id="foodList"></ul>
+  </div>
+</section>
+
+<!-- WORKOUT -->
+<section id="workout" class="section">
+  <div class="card">
+    <div class="card-title">Add Exercise</div>
+    <div class="form-row cols-2">
+      <div>
+        <label>Exercise</label>
+        <input type="text" id="exerciseName" placeholder="e.g. Bench press" />
+      </div>
+      <div>
+        <label>Category</label>
+        <select id="exerciseCategory">
+          <option>Push</option>
+          <option>Pull</option>
+          <option>Legs</option>
+          <option>Core</option>
+          <option>Cardio</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <button class="primary" id="addExerciseBtn" style="width:100%;">Add Exercise</button>
+    <div class="preset-row" id="exercisePresets"></div>
+  </div>
+
+  <div id="workoutList"></div>
+</section>
+
+<!-- PROGRESS -->
+<section id="progress" class="section">
+  <div class="card">
+    <div class="card-title">Calories — Last 14 Days</div>
+    <div class="chart-container"><canvas id="calChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Protein — Last 14 Days</div>
+    <div class="chart-container"><canvas id="proteinChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Weekly Average</div>
+    <div class="macros-summary-row">
+      <div class="summary-stat">
+        <div class="label">Avg Calories</div>
+        <div class="value" id="avgCal">—</div>
+      </div>
+      <div class="summary-stat">
+        <div class="label">Avg Protein</div>
+        <div class="value" id="avgProtein">—</div>
+      </div>
+      <div class="summary-stat">
+        <div class="label">Workouts</div>
+        <div class="value" id="weekWorkouts">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section id="settings" class="section">
+  <div class="card">
+    <div class="card-title">Personal Profile</div>
+    <div class="form-row cols-2">
+      <div>
+        <label>Name</label>
+        <input type="text" id="profName" />
+      </div>
+      <div>
+        <label>Age</label>
+        <input type="number" id="profAge" min="10" max="100" />
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div>
+        <label>Weight (lb)</label>
+        <input type="number" id="profWeight" min="50" max="500" step="0.1" />
+      </div>
+      <div>
+        <label>Height (inches)</label>
+        <input type="number" id="profHeight" min="40" max="90" step="0.5" />
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div>
+        <label>Sex</label>
+        <select id="profSex">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div>
+        <label>Activity level</label>
+        <select id="profActivity">
+          <option value="1.2">Sedentary</option>
+          <option value="1.375">Light (1-2 days/wk)</option>
+          <option value="1.55">Moderate (3-5 days/wk)</option>
+          <option value="1.725">Very active (6-7 days/wk)</option>
+        </select>
+      </div>
+    </div>
+    <div id="profileEstimate" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:8px;font-size:13px;line-height:1.6;"></div>
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="primary" id="recalcBtn">Recalculate targets from profile</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Daily Targets</div>
+    <div class="settings-row">
+      <div class="settings-label">Calories <span class="tag">cut</span></div>
+      <input type="number" id="setCal" />
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Protein (g)</div>
+      <input type="number" id="setProtein" />
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Carbs (g)</div>
+      <input type="number" id="setCarbs" />
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Fat (g)</div>
+      <input type="number" id="setFat" />
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Weekly workout goal</div>
+      <input type="number" id="setWorkouts" />
+    </div>
+    <button class="primary" id="saveSettingsBtn" style="margin-top:16px;width:100%;">Save Targets</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Macro Helper — For You</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.55;">You're 15 and still growing, so the plan is a <b style="color:var(--text);">mild cut</b> — about 300 cal below maintenance with high protein. This is enough to slowly drop body fat while still gaining muscle. Don't go lower or skip meals.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.55;"><b style="color:var(--text);">Signs to eat more:</b> constantly tired, weak in the gym, bad sleep, low mood, slowing growth, getting sick often. If any of those happen, bump calories +200/day and consider talking to a parent or doctor.</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.55;"><b style="color:var(--text);">Reality check:</b> visible abs come from a combo of low-ish body fat <i>and</i> developed ab muscles. Lift heavy, train abs 2x/week, hit protein, and be patient — a healthy cut takes months, not weeks.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Data</div>
+    <div class="btn-row">
+      <button class="secondary" id="exportBtn">Export JSON</button>
+      <button class="secondary" id="importBtn">Import JSON</button>
+      <button class="secondary" id="resetBtn" style="color:var(--danger);">Reset</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none;" />
+  </div>
+</section>
+
+<script>
+// ---------- STATE ----------
+const DEFAULTS = {
+  profile: { name: 'Kush', age: 15, weight: 154, height: 71, sex: 'male', activity: 1.55 },
+  targets: { cal: 2300, protein: 160, carbs: 255, fat: 70, workouts: 5 },
+  goal: { date: '2026-07-01', startWeight: 154, targetWeight: 146 },
+  weights: {}, // { 'YYYY-MM-DD': lbs }
+  days: {},      // { 'YYYY-MM-DD': { food: [...], workout: [...] } }
+  presets: [
+    { name: 'Whole egg', cal: 70, p: 6, c: 0, f: 5 },
+    { name: 'Chicken breast 100g', cal: 165, p: 31, c: 0, f: 3.6 },
+    { name: 'Whey scoop', cal: 120, p: 24, c: 3, f: 1.5 },
+    { name: 'Greek yogurt 150g', cal: 90, p: 16, c: 6, f: 0 },
+    { name: 'Banana', cal: 105, p: 1, c: 27, f: 0 },
+    { name: 'Rice cooked 100g', cal: 130, p: 2.7, c: 28, f: 0.3 }
+  ],
+  exercisePresets: ['Bench press','Squat','Deadlift','Pull-up','Overhead press','Row','Plank']
+};
+
+const KEY = 'shred-tracker-v1';
+let state = load();
+let currentDate = todayKey();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { ...DEFAULTS, ...parsed, targets: { ...DEFAULTS.targets, ...(parsed.targets||{}) } };
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function todayKey() {
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+function getDay(key) {
+  if (!state.days[key]) state.days[key] = { food: [], workout: [] };
+  return state.days[key];
+}
+function fmtDate(key) {
+  const d = new Date(key + 'T00:00:00');
+  const today = todayKey();
+  const yest = (() => { const x = new Date(); x.setDate(x.getDate()-1); return x.toISOString().slice(0,10); })();
+  if (key === today) return 'Today';
+  if (key === yest) return 'Yesterday';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+function fmtDay(key) {
+  return new Date(key + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long' });
+}
+
+// ---------- TABS ----------
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'progress') renderProgress();
+  });
+});
+
+// ---------- DATE NAV ----------
+document.getElementById('prevDay').onclick = () => shiftDate(-1);
+document.getElementById('nextDay').onclick = () => shiftDate(1);
+function shiftDate(delta) {
+  const d = new Date(currentDate + 'T00:00:00');
+  d.setDate(d.getDate() + delta);
+  currentDate = d.toISOString().slice(0,10);
+  renderAll();
+}
+
+// ---------- DASHBOARD ----------
+function renderDashboard() {
+  document.getElementById('dateMain').textContent = fmtDate(currentDate);
+  document.getElementById('dateSub').textContent = fmtDay(currentDate);
+
+  const day = getDay(currentDate);
+  const totals = day.food.reduce((a,f) => ({
+    cal: a.cal + (+f.cal||0),
+    p: a.p + (+f.p||0),
+    c: a.c + (+f.c||0),
+    f: a.f + (+f.f||0)
+  }), { cal:0, p:0, c:0, f:0 });
+
+  const t = state.targets;
+  document.getElementById('calMain').textContent = Math.round(totals.cal);
+  document.getElementById('calTarget').textContent = t.cal;
+  document.getElementById('calRemaining').textContent = Math.max(0, Math.round(t.cal - totals.cal));
+  document.getElementById('calBar').style.width = Math.min(100, totals.cal/t.cal*100) + '%';
+
+  document.getElementById('proteinMain').textContent = Math.round(totals.p);
+  document.getElementById('proteinTarget').textContent = t.protein;
+  document.getElementById('proteinBar').style.width = Math.min(100, totals.p/t.protein*100) + '%';
+
+  document.getElementById('carbsMain').textContent = Math.round(totals.c);
+  document.getElementById('carbsTarget').textContent = t.carbs;
+  document.getElementById('carbsBar').style.width = Math.min(100, totals.c/t.carbs*100) + '%';
+
+  document.getElementById('fatMain').textContent = Math.round(totals.f);
+  document.getElementById('fatTarget').textContent = t.fat;
+  document.getElementById('fatBar').style.width = Math.min(100, totals.f/t.fat*100) + '%';
+
+  // workout summary
+  const wcount = day.workout.length;
+  const sets = day.workout.reduce((a,e) => a + (e.sets?.length||0), 0);
+  document.getElementById('workoutSummary').innerHTML = wcount
+    ? `${wcount}<span class="target"> ex, ${sets} sets</span>`
+    : '<span class="target">No workout</span>';
+  document.getElementById('workoutBar').style.width = (wcount > 0 ? 100 : 0) + '%';
+
+  // streak
+  document.getElementById('streakNum').textContent = computeStreak();
+  // goal card
+  renderGoal();
+  renderWeightHistory();
+}
+
+function renderGoal() {
+  const g = state.goal;
+  if (!g || !g.date) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const goalDate = new Date(g.date + 'T00:00:00');
+  const startDate = (() => {
+    const keys = Object.keys(state.weights).sort();
+    return keys.length ? new Date(keys[0] + 'T00:00:00') : today;
+  })();
+  const daysLeft = Math.max(0, Math.round((goalDate - today) / 86400000));
+  document.getElementById('daysToGoal').textContent = daysLeft;
+  document.getElementById('goalTargetWeight').textContent = g.targetWeight + ' lb';
+
+  const weights = state.weights;
+  const sortedKeys = Object.keys(weights).sort();
+  const currentWeight = sortedKeys.length ? weights[sortedKeys[sortedKeys.length-1]] : state.profile.weight;
+  const totalToLose = g.startWeight - g.targetWeight;
+  const lostSoFar = g.startWeight - currentWeight;
+  const pct = totalToLose > 0 ? Math.min(100, Math.max(0, (lostSoFar/totalToLose)*100)) : 0;
+  document.getElementById('goalProgressBar').style.width = pct + '%';
+
+  // projection
+  if (sortedKeys.length >= 2) {
+    const firstKey = sortedKeys[0];
+    const lastKey = sortedKeys[sortedKeys.length-1];
+    const days = Math.max(1, (new Date(lastKey) - new Date(firstKey)) / 86400000);
+    const rate = (weights[firstKey] - weights[lastKey]) / days; // lb/day lost
+    const projectedLoss = rate * daysLeft;
+    const projected = currentWeight - projectedLoss;
+    document.getElementById('goalProjection').textContent =
+      `Current ${currentWeight.toFixed(1)} lb · projecting ${projected.toFixed(1)} lb by ${goalDate.toLocaleDateString(undefined,{month:'short',day:'numeric'})}`;
+  } else {
+    document.getElementById('goalProjection').textContent =
+      `Current ${currentWeight.toFixed(1)} lb · log weight daily to see projection`;
+  }
+}
+
+function renderWeightHistory() {
+  const keys = Object.keys(state.weights).sort().slice(-5).reverse();
+  const el = document.getElementById('weightHistory');
+  if (!el) return;
+  if (!keys.length) { el.textContent = 'No weight logged yet.'; return; }
+  el.innerHTML = keys.map(k => {
+    const d = new Date(k+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    return `<span style="margin-right:14px;">${d}: <b style="color:var(--text);">${state.weights[k]} lb</b></span>`;
+  }).join('');
+}
+
+setTimeout(() => {
+  const btn = document.getElementById('logWeightBtn');
+  if (btn) btn.onclick = () => {
+    const v = +document.getElementById('weightInput').value;
+    if (!v || v < 50 || v > 500) return;
+    state.weights[currentDate] = v;
+    state.profile.weight = v;
+    save();
+    document.getElementById('weightInput').value = '';
+    renderAll();
+  };
+}, 0);
+
+function computeStreak() {
+  let streak = 0;
+  const d = new Date();
+  for (let i=0; i<365; i++) {
+    const k = d.toISOString().slice(0,10);
+    const day = state.days[k];
+    if (!day) break;
+    const p = day.food.reduce((a,f) => a + (+f.p||0), 0);
+    if (p >= state.targets.protein * 0.9) streak++; else break;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
+
+// ---------- FOOD ----------
+function renderFood() {
+  const day = getDay(currentDate);
+  const list = document.getElementById('foodList');
+  if (!day.food.length) {
+    list.innerHTML = '<li class="empty">No food logged yet.</li>';
+  } else {
+    // group by meal
+    const meals = ['Breakfast','Lunch','Dinner','Snack'];
+    list.innerHTML = '';
+    meals.forEach(meal => {
+      const items = day.food.filter(f => f.meal === meal);
+      if (!items.length) return;
+      const header = document.createElement('li');
+      header.innerHTML = `<div class="entry-meta" style="text-transform:uppercase;letter-spacing:.05em;font-weight:600;padding:8px 0 4px;">${meal}</div>`;
+      header.style.borderBottom = 'none';
+      list.appendChild(header);
+      items.forEach(f => {
+        const li = document.createElement('li');
+        li.className = 'entry';
+        li.innerHTML = `
+          <div class="entry-info">
+            <div class="entry-name">${escapeHtml(f.name)}</div>
+            <div class="entry-meta">${Math.round(f.p||0)}p · ${Math.round(f.c||0)}c · ${Math.round(f.f||0)}f</div>
+          </div>
+          <div class="entry-cal">${Math.round(f.cal||0)} cal</div>
+          <button class="delete-btn" data-id="${f.id}">×</button>`;
+        list.appendChild(li);
+      });
+    });
+    list.querySelectorAll('.delete-btn').forEach(b => {
+      b.onclick = () => {
+        const day = getDay(currentDate);
+        day.food = day.food.filter(f => f.id !== b.dataset.id);
+        save(); renderAll();
+      };
+    });
+  }
+  // presets
+  const q = document.getElementById('quickFoods');
+  q.innerHTML = '';
+  state.presets.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = p.name + ' (' + p.cal + ')';
+    b.onclick = () => {
+      const day = getDay(currentDate);
+      day.food.push({ id: uid(), name: p.name, cal: p.cal, p: p.p, c: p.c, f: p.f, meal: document.getElementById('foodMeal').value });
+      save(); renderAll();
+    };
+    const x = document.createElement('span');
+    x.textContent = ' ×';
+    x.style.opacity = '0.4';
+    x.onclick = (e) => { e.stopPropagation(); state.presets.splice(i,1); save(); renderFood(); };
+    b.appendChild(x);
+    q.appendChild(b);
+  });
+}
+
+async function estimateMacros(description) {
+  const status = document.getElementById('estimateStatus');
+  status.textContent = 'Estimating macros…';
+  status.style.color = 'var(--muted)';
+  try {
+    const prompt = `You are a nutrition assistant. Given this food description, estimate total calories and macros (protein, carbs, fat in grams). Account for any quantities or portions mentioned. If no portion is given, assume one typical serving.
+
+Food: "${description}"
+
+Respond with ONLY a JSON object on a single line, no markdown, no explanation, in this exact format:
+{"cal": <number>, "protein": <number>, "carbs": <number>, "fat": <number>}`;
+
+    const result = await window.cowork.askClaude(prompt, []);
+    // result may be a string or object; try to parse JSON out of it
+    let text = typeof result === 'string' ? result : (result?.text || result?.content || JSON.stringify(result));
+    const match = text.match(/\{[^}]*"cal"[^}]*\}/);
+    if (!match) throw new Error('No JSON found in response');
+    const data = JSON.parse(match[0]);
+    document.getElementById('foodCal').value = Math.round(data.cal || 0);
+    document.getElementById('foodProtein').value = Math.round((data.protein || 0) * 10) / 10;
+    document.getElementById('foodCarbs').value = Math.round((data.carbs || 0) * 10) / 10;
+    document.getElementById('foodFat').value = Math.round((data.fat || 0) * 10) / 10;
+    status.textContent = `✓ ${Math.round(data.cal)} cal · ${Math.round(data.protein)}p · ${Math.round(data.carbs)}c · ${Math.round(data.fat)}f — review and adjust if needed`;
+    status.style.color = 'var(--good)';
+    return true;
+  } catch (err) {
+    status.textContent = '✗ Couldn\'t estimate. Enter macros manually.';
+    status.style.color = 'var(--danger)';
+    console.error(err);
+    return false;
+  }
+}
+
+document.getElementById('estimateBtn').onclick = async () => {
+  const name = document.getElementById('foodName').value.trim();
+  if (!name) {
+    document.getElementById('estimateStatus').textContent = 'Type what you ate first.';
+    return;
+  }
+  const btn = document.getElementById('estimateBtn');
+  btn.disabled = true;
+  btn.textContent = '…';
+  await estimateMacros(name);
+  btn.disabled = false;
+  btn.innerHTML = '✨ Estimate';
+};
+
+document.getElementById('foodName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('estimateBtn').click();
+});
+
+document.getElementById('addFoodBtn').onclick = async () => {
+  const name = document.getElementById('foodName').value.trim();
+  if (!name) return;
+  // If no macros entered yet, estimate first
+  const hasMacros = ['foodCal','foodProtein','foodCarbs','foodFat'].some(id => +document.getElementById(id).value > 0);
+  if (!hasMacros) {
+    const ok = await estimateMacros(name);
+    if (!ok) return;
+  }
+  const day = getDay(currentDate);
+  day.food.push({
+    id: uid(),
+    name,
+    cal: +document.getElementById('foodCal').value || 0,
+    p: +document.getElementById('foodProtein').value || 0,
+    c: +document.getElementById('foodCarbs').value || 0,
+    f: +document.getElementById('foodFat').value || 0,
+    meal: document.getElementById('foodMeal').value
+  });
+  save();
+  ['foodName','foodCal','foodProtein','foodCarbs','foodFat'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('estimateStatus').textContent = '';
+  renderAll();
+};
+
+document.getElementById('savePresetBtn').onclick = () => {
+  const name = document.getElementById('foodName').value.trim();
+  if (!name) return;
+  state.presets.push({
+    name,
+    cal: +document.getElementById('foodCal').value || 0,
+    p: +document.getElementById('foodProtein').value || 0,
+    c: +document.getElementById('foodCarbs').value || 0,
+    f: +document.getElementById('foodFat').value || 0
+  });
+  save(); renderFood();
+};
+
+// ---------- WORKOUT ----------
+function renderWorkout() {
+  const day = getDay(currentDate);
+  const list = document.getElementById('workoutList');
+  list.innerHTML = '';
+  if (!day.workout.length) {
+    list.innerHTML = '<div class="card"><div class="empty">No exercises yet. Add one above.</div></div>';
+  } else {
+    day.workout.forEach(ex => {
+      const wrap = document.createElement('div');
+      wrap.className = 'workout-exercise';
+      wrap.innerHTML = `<h4>
+        <span>${escapeHtml(ex.name)} <span class="tag">${ex.category||''}</span></span>
+        <button class="delete-btn" data-ex="${ex.id}">×</button>
+      </h4>
+      <div class="sets" id="sets-${ex.id}"></div>
+      <button class="add-set-btn" data-ex="${ex.id}">+ add set</button>`;
+      list.appendChild(wrap);
+      renderSets(ex);
+    });
+    list.querySelectorAll('[data-ex].delete-btn').forEach(b => {
+      b.onclick = () => {
+        const day = getDay(currentDate);
+        day.workout = day.workout.filter(e => e.id !== b.dataset.ex);
+        save(); renderAll();
+      };
+    });
+    list.querySelectorAll('.add-set-btn').forEach(b => {
+      b.onclick = () => {
+        const day = getDay(currentDate);
+        const ex = day.workout.find(e => e.id === b.dataset.ex);
+        ex.sets.push({ reps: '', weight: '' });
+        save(); renderWorkout();
+      };
+    });
+  }
+  // presets
+  const p = document.getElementById('exercisePresets');
+  p.innerHTML = '';
+  state.exercisePresets.forEach(name => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = name;
+    b.onclick = () => {
+      document.getElementById('exerciseName').value = name;
+    };
+    p.appendChild(b);
+  });
+}
+function renderSets(ex) {
+  const c = document.getElementById('sets-' + ex.id);
+  if (!c) return;
+  c.innerHTML = '';
+  ex.sets.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'set-row';
+    row.innerHTML = `
+      <div class="set-num">${i+1}</div>
+      <input type="number" placeholder="reps" value="${s.reps}" data-field="reps" />
+      <input type="number" placeholder="kg/lb" value="${s.weight}" data-field="weight" />
+      <button class="delete-btn" data-i="${i}">×</button>`;
+    row.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('change', () => {
+        s[inp.dataset.field] = inp.value;
+        save();
+      });
+    });
+    row.querySelector('.delete-btn').onclick = () => {
+      ex.sets.splice(i,1); save(); renderWorkout();
+    };
+    c.appendChild(row);
+  });
+}
+document.getElementById('addExerciseBtn').onclick = () => {
+  const name = document.getElementById('exerciseName').value.trim();
+  if (!name) return;
+  const day = getDay(currentDate);
+  day.workout.push({
+    id: uid(),
+    name,
+    category: document.getElementById('exerciseCategory').value,
+    sets: [{ reps:'', weight:'' }]
+  });
+  document.getElementById('exerciseName').value = '';
+  save(); renderAll();
+};
+
+// ---------- PROGRESS ----------
+let calChartObj, proteinChartObj;
+function renderProgress() {
+  const days = [];
+  const cals = [];
+  const prots = [];
+  for (let i=13; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = d.toISOString().slice(0,10);
+    days.push(d.toLocaleDateString(undefined,{month:'numeric',day:'numeric'}));
+    const day = state.days[k];
+    if (day) {
+      cals.push(day.food.reduce((a,f) => a + (+f.cal||0), 0));
+      prots.push(day.food.reduce((a,f) => a + (+f.p||0), 0));
+    } else {
+      cals.push(0); prots.push(0);
+    }
+  }
+  const opts = (label, color, target) => ({
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [{
+        label, data: cals.map(()=>0), backgroundColor: color, borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: false
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+  if (calChartObj) calChartObj.destroy();
+  if (proteinChartObj) proteinChartObj.destroy();
+  calChartObj = new Chart(document.getElementById('calChart'), {
+    type: 'bar',
+    data: { labels: days, datasets: [{ label:'Calories', data: cals, backgroundColor:'#111', borderRadius:4 }]},
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{ beginAtZero:true, grid:{color:'#f0f0f0'}}, x:{grid:{display:false}}}}
+  });
+  proteinChartObj = new Chart(document.getElementById('proteinChart'), {
+    type: 'bar',
+    data: { labels: days, datasets: [{ label:'Protein', data: prots, backgroundColor:'#2563eb', borderRadius:4 }]},
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{ beginAtZero:true, grid:{color:'#f0f0f0'}}, x:{grid:{display:false}}}}
+  });
+  // 7-day averages
+  const last7Cal = cals.slice(-7).filter(v=>v>0);
+  const last7P = prots.slice(-7).filter(v=>v>0);
+  document.getElementById('avgCal').textContent = last7Cal.length ? Math.round(last7Cal.reduce((a,b)=>a+b,0)/last7Cal.length) : '—';
+  document.getElementById('avgProtein').textContent = last7P.length ? Math.round(last7P.reduce((a,b)=>a+b,0)/last7P.length) + 'g' : '—';
+  // workouts in last 7 days
+  let wcount = 0;
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const k = d.toISOString().slice(0,10);
+    if (state.days[k]?.workout?.length) wcount++;
+  }
+  document.getElementById('weekWorkouts').textContent = wcount + ' / ' + state.targets.workouts;
+}
+
+// ---------- SETTINGS ----------
+function calcTDEE(profile) {
+  // weight in lb -> kg, height in inches -> cm
+  const w = profile.weight * 0.453592;
+  const h = profile.height * 2.54;
+  // For ages 10-18, use Schofield equation (more accurate for growing teens)
+  let bmr;
+  if (profile.age >= 10 && profile.age <= 18) {
+    bmr = profile.sex === 'male'
+      ? 17.7 * w + 657
+      : 13.4 * w + 692;
+  } else {
+    // Mifflin-St Jeor for adults
+    bmr = profile.sex === 'male'
+      ? 10 * w + 6.25 * h - 5 * profile.age + 5
+      : 10 * w + 6.25 * h - 5 * profile.age - 161;
+  }
+  const tdee = Math.round(bmr * profile.activity);
+  return { bmr: Math.round(bmr), tdee };
+}
+
+function suggestedTargets(profile) {
+  const { bmr, tdee } = calcTDEE(profile);
+  // Safe cut: 300-400 cal deficit for teens, 500 max for adults
+  const isTeen = profile.age <= 18;
+  const deficit = isTeen ? 300 : 400;
+  const cal = Math.max(tdee - deficit, Math.round(bmr * 1.1)); // never go below BMR×1.1
+  const protein = Math.round(profile.weight * 1.0); // 1g/lb
+  const fat = Math.round((cal * 0.28) / 9); // ~28% from fat
+  const carbs = Math.round((cal - protein*4 - fat*9) / 4);
+  return { cal, protein, carbs, fat, bmr, tdee, isTeen };
+}
+
+function renderProfile() {
+  const p = state.profile;
+  document.getElementById('profName').value = p.name;
+  document.getElementById('profAge').value = p.age;
+  document.getElementById('profWeight').value = p.weight;
+  document.getElementById('profHeight').value = p.height;
+  document.getElementById('profSex').value = p.sex;
+  document.getElementById('profActivity').value = p.activity;
+  const s = suggestedTargets(p);
+  const ft = `${Math.floor(p.height/12)}'${Math.round(p.height%12)}"`;
+  document.getElementById('headerSubtitle').textContent = `${p.name ? '' : ''}Cutting to shredded abs · ${p.weight} lb · ${ft}`;
+  document.getElementById('profileEstimate').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div><span style="color:var(--muted);">BMR:</span> <b>${s.bmr}</b> cal</div>
+      <div><span style="color:var(--muted);">Maintenance:</span> <b>${s.tdee}</b> cal</div>
+    </div>
+    <div style="color:var(--muted);">Recommended cut: <b style="color:var(--text);">${s.cal} cal</b> · <b style="color:var(--text);">${s.protein}g</b> protein · <b style="color:var(--text);">${s.carbs}g</b> carbs · <b style="color:var(--text);">${s.fat}g</b> fat</div>
+    ${s.isTeen ? '<div style="margin-top:8px;padding:8px;background:#fef3c7;border-radius:6px;color:#78350f;font-size:12px;">⚠ Teen note: deficits over 300-400 cal can stall growth and recovery. Keep cuts mild.</div>' : ''}
+  `;
+}
+
+function renderSettings() {
+  renderProfile();
+  document.getElementById('setCal').value = state.targets.cal;
+  document.getElementById('setProtein').value = state.targets.protein;
+  document.getElementById('setCarbs').value = state.targets.carbs;
+  document.getElementById('setFat').value = state.targets.fat;
+  document.getElementById('setWorkouts').value = state.targets.workouts;
+}
+
+['profName','profAge','profWeight','profHeight','profSex','profActivity'].forEach(id => {
+  document.addEventListener('DOMContentLoaded', () => {});
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', () => {
+      state.profile = {
+        name: document.getElementById('profName').value || 'You',
+        age: +document.getElementById('profAge').value || 15,
+        weight: +document.getElementById('profWeight').value || 154,
+        height: +document.getElementById('profHeight').value || 71,
+        sex: document.getElementById('profSex').value,
+        activity: +document.getElementById('profActivity').value
+      };
+      save();
+      renderProfile();
+    });
+  }, 0);
+});
+
+setTimeout(() => {
+  const rb = document.getElementById('recalcBtn');
+  if (rb) rb.onclick = () => {
+    const s = suggestedTargets(state.profile);
+    state.targets.cal = s.cal;
+    state.targets.protein = s.protein;
+    state.targets.carbs = s.carbs;
+    state.targets.fat = s.fat;
+    save(); renderAll();
+    flash(rb, 'Targets updated ✓');
+  };
+}, 0);
+document.getElementById('saveSettingsBtn').onclick = () => {
+  state.targets = {
+    cal: +document.getElementById('setCal').value || 2000,
+    protein: +document.getElementById('setProtein').value || 180,
+    carbs: +document.getElementById('setCarbs').value || 150,
+    fat: +document.getElementById('setFat').value || 60,
+    workouts: +document.getElementById('setWorkouts').value || 4
+  };
+  save(); renderAll();
+  flash(document.getElementById('saveSettingsBtn'), 'Saved ✓');
+};
+document.getElementById('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'shred-tracker-' + todayKey() + '.json';
+  a.click();
+};
+document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+document.getElementById('importFile').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      state = JSON.parse(ev.target.result);
+      save(); renderAll(); renderSettings();
+    } catch(err) { alert('Invalid JSON'); }
+  };
+  reader.readAsText(file);
+};
+document.getElementById('resetBtn').onclick = () => {
+  if (confirm('Reset all data? This cannot be undone.')) {
+    state = JSON.parse(JSON.stringify(DEFAULTS));
+    save(); renderAll(); renderSettings();
+  }
+};
+
+// ---------- UTILS ----------
+function uid() { return Math.random().toString(36).slice(2,10); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function flash(el, text) {
+  const orig = el.textContent;
+  el.textContent = text;
+  setTimeout(() => el.textContent = orig, 1200);
+}
+
+function renderAll() {
+  renderDashboard();
+  renderFood();
+  renderWorkout();
+  renderSettings();
+}
+renderAll();
+</script>
+</body>
+</html>

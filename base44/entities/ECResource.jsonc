@@ -1,0 +1,72 @@
+{
+  "name": "ECResource",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Name of the resource"
+    },
+    "description": {
+      "type": "string",
+      "description": "What the resource offers"
+    },
+    "url": {
+      "type": "string",
+      "description": "Link to the resource"
+    },
+    "major": {
+      "type": "string",
+      "enum": [
+        "cs",
+        "engineering",
+        "premed",
+        "prelaw",
+        "finance",
+        "biology",
+        "environmental",
+        "psychology",
+        "arts"
+      ],
+      "description": "Field key this resource supports"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "EC Program",
+        "Free Coaching",
+        "Prep Course",
+        "Competition",
+        "Mentorship",
+        "Volunteer",
+        "Organization"
+      ],
+      "description": "Type of resource"
+    },
+    "cost": {
+      "type": "string",
+      "enum": [
+        "Free",
+        "Free to Apply",
+        "Low Cost",
+        "Varies"
+      ],
+      "default": "Free"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "major",
+    "url"
+  ]
+}

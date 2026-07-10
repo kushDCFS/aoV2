@@ -1,0 +1,70 @@
+{
+  "name": "Resource",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Name of the resource"
+    },
+    "description": {
+      "type": "string",
+      "description": "What the resource offers"
+    },
+    "url": {
+      "type": "string",
+      "description": "Link to the resource"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "AP & IB Courses",
+        "SAT Prep",
+        "Engineering ECs",
+        "Law ECs",
+        "Healthcare ECs",
+        "Finance ECs",
+        "Scholarships",
+        "Research & Cold Email"
+      ],
+      "description": "Resource category"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "Free Course",
+        "Practice Material",
+        "Program",
+        "Scholarship",
+        "Guide",
+        "Organization"
+      ],
+      "description": "Type of resource"
+    },
+    "cost": {
+      "type": "string",
+      "enum": [
+        "Free",
+        "Free to Apply",
+        "Low Cost",
+        "Varies"
+      ],
+      "default": "Free"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "category",
+    "url"
+  ]
+}

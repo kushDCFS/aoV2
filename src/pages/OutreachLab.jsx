@@ -1,0 +1,712 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { Mail, Copy, Check, Table2, Search, Sparkles, ExternalLink, Loader2, GraduationCap, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
+import { emailTemplates, trackerExample, professorTemplates } from "@/lib/outreachData";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+const majorTracks = [
+  { name: "All Tracks", key: "All" },
+  { name: "Computer Science (CS)", key: "CS" },
+  { name: "Engineering", key: "Engineering" },
+  { name: "Premed / Healthcare", key: "Premed" },
+  { name: "Prelaw / Law", key: "Prelaw" },
+  { name: "Finance / Business", key: "Finance" },
+  { name: "Biology / Life Sciences", key: "Biology" },
+  { name: "Environmental Science", key: "Environmental" },
+  { name: "Psychology & Behavioral", key: "Psychology" },
+  { name: "Arts & Humanities", key: "Arts" },
+];
+
+const getDomainsForTrack = (track, allDomains) => {
+  if (track === "All") return [];
+  const keywordMap = {
+    cs: ["computer", "machine learning", "intelligence", "robotic", "network", "hci", "systems", "nlp", "vision", "formal methods", "algorithm", "data science"],
+    engineering: ["engineering", "robotic", "mechanical", "electrical", "materials", "aerospace", "systems", "nano", "circuits", "energy"],
+    premed: ["medical", "health", "biomedical", "biology", "clinical", "neuroscience", "bioinformatics", "pharmacology", "imaging", "nanobio"],
+    prelaw: ["law", "legal", "policy", "ethics", "justice", "governance"],
+    finance: ["finance", "accounting", "economics", "business", "management", "marketing"],
+    biology: ["biology", "biotechnology", "bioinformatics", "genetics", "neuroscience", "ecology", "microbiology", "nanobio"],
+    environmental: ["environmental", "earth", "climate", "sustainability", "energy", "ecology", "ocean", "hydrology"],
+    psychology: ["psychology", "cognitive", "behavioral", "brain", "choice"],
+    arts: ["art", "design", "media", "humanities", "history", "languages", "literature", "culture"],
+  };
+  const keywords = keywordMap[track.toLowerCase()] || [];
+  return allDomains.filter(d => 
+    keywords.some(kw => d.toLowerCase().includes(kw))
+  );
+};
+
+const getLastName = (fullName) => {
+  if (!fullName) return "";
+  let cleanName = fullName.replace(/^(Dr\.|Prof\.|Doctor|Professor)\s+/i, "").trim();
+  const parts = cleanName.split(" ");
+  return parts[parts.length - 1] || "";
+};
+
+const compileEmail = (templateBody, templateSubject, prof, studentInfo) => {
+  if (!prof) return { subject: "", body: "" };
+
+  const lastName = getLastName(prof.name);
+  const topics = prof.domain || prof.department || "your research area";
+  
+  let interests = prof.ai_keywords || "";
+  if (!interests && prof.research_interests) {
+    const firstLine = prof.research_interests.split('\n')[0];
+    interests = firstLine.replace(/^(Methodology:)/i, "").trim();
+  }
+  if (!interests) interests = "your research field";
+
+  const replacements = {
+    "\\[Professor \\]?\\[Last Name\\]": `Professor ${lastName}`,
+    "\\[Last Name\\]": lastName,
+    "\\[Professor \\]?\\[Name\\]": `Professor ${prof.name}`,
+    "\\[Name\\]": prof.name,
+    "\\[University\\]": prof.university || "your university",
+    "\\[Research Domain\\]": topics,
+    "\\[Research Interests/Keywords\\]": interests,
+    "\\[Your Name\\]": studentInfo.name || "[Your Name]",
+    "\\[Your Email\\]": studentInfo.email || "[Your Email]",
+    "\\[Grade Level\\]": studentInfo.grade || "[Grade Level]",
+    "\\[High School\\]": studentInfo.highSchool || "[High School]",
+    "\\[Your Skills\\]": studentInfo.skills || "[Your Skills]",
+  };
+
+  let subject = templateSubject;
+  let body = templateBody;
+
+  Object.entries(replacements).forEach(([placeholder, val]) => {
+    const regex = new RegExp(placeholder, "g");
+    subject = subject.replace(regex, val);
+    body = body.replace(regex, val);
+  });
+
+  return { subject, body };
+};
+
+export default function OutreachLab() {
+  const [copiedId, setCopiedId] = useState(null);
+
+  const [professors, setProfessors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingFilters, setLoadingFilters] = useState(false);
+  const [wakingUp, setWakingUp] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTrack, setSelectedTrack] = useState("All");
+  const [selectedUniversity, setSelectedUniversity] = useState("All");
+  const [filterOptions, setFilterOptions] = useState({ domain: [], university: [] });
+
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 20;
+
+  const [selectedProf, setSelectedProf] = useState(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("standard");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const [copiedSubject, setCopiedSubject] = useState(false);
+  const [copiedBody, setCopiedBody] = useState(false);
+
+  const [studentInfo, setStudentInfo] = useState({
+    name: localStorage.getItem("outreach_student_name") || "",
+    email: localStorage.getItem("outreach_student_email") || "",
+    grade: localStorage.getItem("outreach_student_grade") || "Junior",
+    highSchool: localStorage.getItem("outreach_student_highSchool") || "",
+    skills: localStorage.getItem("outreach_student_skills") || "Python, data analysis, literature reviews",
+  });
+
+  const handleStudentInfoChange = (key, value) => {
+    setStudentInfo((prev) => {
+      const updated = { ...prev, [key]: value };
+      localStorage.setItem(`outreach_student_${key}`, value);
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    setLoadingFilters(true);
+    const wakeupTimer = setTimeout(() => {
+      setWakingUp(true);
+    }, 1500);
+
+    fetch("https://profping.onrender.com/filters")
+      .then((res) => res.json())
+      .then((data) => {
+        clearTimeout(wakeupTimer);
+        setWakingUp(false);
+        setFilterOptions({
+          domain: data.domain || [],
+          university: data.university || [],
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to load filters:", err);
+        setFilterOptions({
+          domain: [],
+          university: [
+            "Brown University", "Caltech", "Carnegie Mellon University", "Columbia University",
+            "Cornell University", "Dartmouth College", "EPFL", "ETH Zurich", "Harvard University",
+            "MIT", "Princeton University", "Stanford University", "UC Berkeley", "University of Cambridge",
+            "University of Oxford", "Yale University"
+          ]
+        });
+      })
+      .finally(() => {
+        setLoadingFilters(false);
+      });
+
+    return () => clearTimeout(wakeupTimer);
+  }, []);
+
+  const fetchProfessors = useCallback((isNewSearch = false) => {
+    setLoading(true);
+    setError(null);
+
+    const currentOffset = isNewSearch ? 0 : offset;
+    const mappedDomains = getDomainsForTrack(selectedTrack, filterOptions.domain);
+
+    const params = new URLSearchParams();
+    mappedDomains.forEach((d) => params.append("domain", d));
+    
+    if (selectedUniversity !== "All") {
+      params.append("university", selectedUniversity);
+    }
+    if (searchQuery) {
+      params.append("search", searchQuery);
+    }
+    params.append("limit", limit.toString());
+    params.append("offset", currentOffset.toString());
+
+    fetch(`https://profping.onrender.com/professors?${params.toString()}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isNewSearch) {
+          setProfessors(data);
+          setOffset(limit);
+        } else {
+          setProfessors((prev) => [...prev, ...data]);
+          setOffset((prev) => prev + limit);
+        }
+        setHasMore(data.length === limit);
+      })
+      .catch((err) => {
+        console.error("Failed to load professors:", err);
+        setError("Unable to connect to the professor database. Please check your internet connection or try again.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [selectedTrack, selectedUniversity, searchQuery, offset, filterOptions.domain]);
+
+  useEffect(() => {
+    fetchProfessors(true);
+  }, [selectedTrack, selectedUniversity]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    fetchProfessors(true);
+  };
+
+  const handleCopyPlaybook = (template) => {
+    const fullText = `Subject: ${template.subject}\n\n${template.body}`;
+    navigator.clipboard.writeText(fullText);
+    setCopiedId(template.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const currentTemplate = professorTemplates.find((t) => t.id === selectedTemplateId) || professorTemplates[0];
+  const compiled = compileEmail(currentTemplate.body, currentTemplate.subject, selectedProf, studentInfo);
+
+  const handleCopySubject = () => {
+    navigator.clipboard.writeText(compiled.subject);
+    setCopiedSubject(true);
+    setTimeout(() => setCopiedSubject(false), 2000);
+  };
+
+  const handleCopyBody = () => {
+    navigator.clipboard.writeText(compiled.body);
+    setCopiedBody(true);
+    setTimeout(() => setCopiedBody(false), 2000);
+  };
+
+  return (
+    <div>
+      <PageHeader
+        title="The Outreach Lab"
+        subtitle="Search a database of active research professors from top universities, filter by major track, and dynamically draft personalized cold emails in seconds."
+        icon={Mail}
+      />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs defaultValue="professors" className="w-full space-y-8">
+          <TabsList className="grid w-full max-w-md grid-cols-2 bg-slate-100 p-1 rounded-xl">
+            <TabsTrigger
+              value="professors"
+              className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm text-slate-500"
+            >
+              <GraduationCap className="h-4 w-4" />
+              Find Professors
+            </TabsTrigger>
+            <TabsTrigger
+              value="playbooks"
+              className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm text-slate-500"
+            >
+              <BookOpen className="h-4 w-4" />
+              Playbooks & Tracker
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="professors" className="space-y-6 outline-none">
+            {wakingUp && (
+              <div className="flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 p-4 text-amber-800 animate-pulse">
+                <Loader2 className="h-5 w-5 animate-spin flex-shrink-0" />
+                <div className="text-sm">
+                  <strong>Waking up the database server...</strong> The search engine is hosted on a free Render server that falls asleep due to inactivity. This might take 30-40 seconds on the first request, thank you for your patience!
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleSearchSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+              <h3 className="font-bold text-slate-900 text-lg">Filter & Search Engine</h3>
+              
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Major Track</label>
+                  <select
+                    value={selectedTrack}
+                    onChange={(e) => setSelectedTrack(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-55 px-3.5 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100/50 transition-all"
+                  >
+                    {majorTracks.map((track) => (
+                      <option key={track.key} value={track.key}>
+                        {track.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">University</label>
+                  <select
+                    value={selectedUniversity}
+                    onChange={(e) => setSelectedUniversity(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-55 px-3.5 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100/50 transition-all"
+                    disabled={loadingFilters}
+                  >
+                    <option value="All">All Universities</option>
+                    {filterOptions.university.map((uni) => (
+                      <option key={uni} value={uni}>
+                        {uni}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Search Keywords</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="e.g. AI, genetics, cancer..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-55 pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100/50 transition-all"
+                    />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2 border-t border-slate-100">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-all disabled:bg-slate-300"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                  Apply Search Query
+                </button>
+              </div>
+            </form>
+
+            {error && (
+              <div className="flex items-center gap-3 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-rose-800">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm font-medium">{error}</span>
+                <button
+                  onClick={() => fetchProfessors(true)}
+                  className="ml-auto inline-flex items-center gap-1 text-xs font-bold underline"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> Try again
+                </button>
+              </div>
+            )}
+
+            {professors.length === 0 && !loading && !error ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-4">
+                  <Search className="h-6 w-6" />
+                </div>
+                <h4 className="font-bold text-slate-900 text-lg">No professors found</h4>
+                <p className="text-sm text-slate-500 max-w-sm mt-1">
+                  Try clearing your keyword filters or broadening your search queries.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {professors.map((prof, idx) => (
+                    <div
+                      key={`${prof.id}-${idx}`}
+                      className="group flex flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all hover:border-indigo-200 hover:shadow-md hover:-translate-y-0.5 duration-200"
+                    >
+                      <div className="flex-1 space-y-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+                            {prof.university}
+                          </span>
+                          {prof.department && (
+                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                              {prof.department}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="font-heading text-lg font-bold text-slate-900 group-hover:text-indigo-800 transition-colors">
+                          {prof.name}
+                        </h4>
+
+                        <div className="space-y-1">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Research Domain</span>
+                          <p className="text-sm text-slate-700 font-semibold line-clamp-1">
+                            {prof.domain || "N/A"}
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Keywords & Projects</span>
+                          <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">
+                            {prof.ai_keywords || prof.research_interests || "No research details provided."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <span className="text-xs font-mono text-slate-400">
+                          {prof.email !== "N/A" ? prof.email : "Email not listed"}
+                        </span>
+                        
+                        <button
+                          onClick={() => {
+                            setSelectedProf(prof);
+                            setIsDialogOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 shadow-sm transition-all"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          Draft Email
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {loading && professors.length === 0 && (
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="h-56 animate-pulse rounded-2xl bg-slate-100 border border-slate-200" />
+                    ))
+                  )}
+                </div>
+
+                {hasMore && !error && (
+                  <div className="flex justify-center pt-2">
+                    <button
+                      onClick={() => fetchProfessors(false)}
+                      disabled={loading}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Loading more...
+                        </>
+                      ) : (
+                        "Load More Professors"
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="playbooks" className="space-y-16 outline-none">
+            <section>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Cold Email Playbook</h2>
+              <p className="text-slate-500 mb-6 max-w-3xl">
+                Three fill-in-the-blank email templates for high school students. Replace every bracketed placeholder with
+                your own information. Always attach a resume and send from a professional email address.
+              </p>
+
+              <div className="space-y-6">
+                {emailTemplates.map((template) => (
+                  <div key={template.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+                    <div className="flex items-center justify-between bg-slate-50 px-5 sm:px-6 py-4 border-b border-slate-200">
+                      <h3 className="font-bold text-slate-900 text-sm sm:text-base">{template.title}</h3>
+                      <button
+                        onClick={() => handleCopyPlaybook(template)}
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                          copiedId === template.id
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-slate-900 text-white hover:bg-slate-700"
+                        }`}
+                      >
+                        {copiedId === template.id ? (
+                          <>
+                            <Check className="h-3.5 w-3.5" /> Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5" /> Copy
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="p-5 sm:p-6">
+                      <p className="text-sm font-semibold text-slate-500 mb-3 pb-3 border-b border-slate-100">
+                        {template.subject}
+                      </p>
+                      <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        {template.body}
+                      </pre>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 rounded-xl bg-blue-50 border border-blue-200 p-5">
+                <p className="text-sm text-blue-800 leading-relaxed">
+                  <strong>Pro tip:</strong> Send emails on Tuesday or Wednesday mornings (8-10 AM). Follow up exactly 7 days
+                  after your first email if you don't hear back. One polite follow-up is expected and shows persistence —
+                  two is pushy.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                  <Table2 className="h-5 w-5 text-slate-600" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Tracker Matrix</h2>
+              </div>
+              <p className="text-slate-500 mb-6 max-w-3xl">
+                Recreate this table in Google Sheets (free) or Excel to track every outreach email you send. The example
+                rows below show how to use it. Never send an email without logging it here first.
+              </p>
+
+              <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-slate-900 text-white">
+                      <th className="px-4 py-3.5 font-semibold">Organization / Professor Name</th>
+                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Date Sent</th>
+                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Follow-up Date</th>
+                      <th className="px-4 py-3.5 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {trackerExample.map((row, i) => (
+                      <tr key={i} className="bg-white hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-3.5 font-medium text-slate-900">{row.organization}</td>
+                        <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">{row.dateSent}</td>
+                        <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">{row.followUpDate}</td>
+                        <td className="px-4 py-3.5">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              row.status === "No Response"
+                                ? "bg-red-100 text-red-700"
+                                : row.status === "Awaiting Reply"
+                                ? "bg-amber-100 text-amber-700"
+                                : row.status === "Interview Scheduled"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-emerald-100 text-emerald-700"
+                            }`}
+                          >
+                            {row.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 p-5">
+                <h4 className="font-bold text-slate-900 mb-2 text-sm">How to recreate this in Google Sheets:</h4>
+                <ol className="space-y-1.5 text-sm text-slate-600">
+                  <li>1. Go to sheets.google.com and create a blank spreadsheet (free with a Google account).</li>
+                  <li>2. In row 1, enter the column headers: Organization/Professor Name, Date Sent, Follow-up Date, Status.</li>
+                  <li>3. Add a 5th column for "Notes" to track conversation details and next steps.</li>
+                  <li>4. Use Data → Data Validation on the Status column to create a dropdown: No Response, Awaiting Reply, Replied, Interview Scheduled, Accepted, Declined.</li>
+                  <li>5. Set a conditional format: red for "No Response," amber for "Awaiting Reply," green for positive statuses.</li>
+                </ol>
+              </div>
+            </section>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-250">
+          <DialogHeader className="border-b border-slate-100 pb-4">
+            <DialogTitle className="text-xl font-heading font-bold text-slate-950 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-indigo-600 animate-pulse" />
+              Dynamic Email Copilot
+            </DialogTitle>
+            <DialogDescription className="text-slate-500 text-sm">
+              Drafting a personalized cold email for <span className="font-bold text-slate-800">{selectedProf?.name}</span> at <span className="font-bold text-slate-800">{selectedProf?.university}</span>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-6 md:grid-cols-5 pt-4">
+            <div className="md:col-span-2 space-y-4 border-r border-slate-100 pr-0 md:pr-6">
+              <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider text-indigo-600">Your Profiles</h4>
+              
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-650">Your Full Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Alex Chen"
+                  value={studentInfo.name}
+                  onChange={(e) => handleStudentInfoChange("name", e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-650">Your Email Address</label>
+                <input
+                  type="email"
+                  placeholder="e.g. alexchen@gmail.com"
+                  value={studentInfo.email}
+                  onChange={(e) => handleStudentInfoChange("email", e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-650">Grade Level</label>
+                  <select
+                    value={studentInfo.grade}
+                    onChange={(e) => handleStudentInfoChange("grade", e.target.value)}
+                    className="w-full rounded-xl border border-slate-250 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                  >
+                    <option value="Freshman">Freshman</option>
+                    <option value="Sophomore">Sophomore</option>
+                    <option value="Junior">Junior</option>
+                    <option value="Senior">Senior</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-650">High School</label>
+                  <input
+                    type="text"
+                    placeholder="Oakridge High"
+                    value={studentInfo.highSchool}
+                    onChange={(e) => handleStudentInfoChange("highSchool", e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-650">Relevant Skills (comma separated)</label>
+                <textarea
+                  rows="2"
+                  placeholder="Python, basic statistical analysis, literature reviews..."
+                  value={studentInfo.skills}
+                  onChange={(e) => handleStudentInfoChange("skills", e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all resize-none"
+                />
+              </div>
+
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <label className="text-xs font-semibold text-slate-650">Select Outreach Blueprint</label>
+                <select
+                  value={selectedTemplateId}
+                  onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                >
+                  {professorTemplates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="md:col-span-3 flex flex-col space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider text-indigo-600">Generated Draft</h4>
+                {selectedProf?.email && selectedProf.email !== "N/A" && (
+                  <a
+                    href={`mailto:${selectedProf.email}?subject=${encodeURIComponent(compiled.subject)}&body=${encodeURIComponent(compiled.body)}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                  >
+                    Open in Mail app <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 relative group">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Subject</div>
+                <div className="text-sm font-semibold text-slate-800 pr-10">{compiled.subject}</div>
+                <button
+                  onClick={handleCopySubject}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 bg-white border border-slate-200 text-slate-500 hover:text-slate-800 transition-all"
+                  title="Copy Subject"
+                >
+                  {copiedSubject ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+
+              <div className="flex-1 rounded-xl border border-slate-200 bg-slate-50 p-4 relative flex flex-col">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Message Body</div>
+                <div className="text-xs text-slate-550 mb-2 border-b border-slate-200 pb-2">
+                  To: <span className="font-mono text-slate-700">{selectedProf?.email !== "N/A" ? selectedProf?.email : "Name not found (check directory)"}</span>
+                </div>
+                <div className="flex-1 overflow-y-auto max-h-[30vh] text-sm text-slate-700 font-mono leading-relaxed whitespace-pre-wrap pr-4">
+                  {compiled.body}
+                </div>
+                <button
+                  onClick={handleCopyBody}
+                  className="absolute right-4 bottom-4 rounded-xl p-2.5 bg-slate-900 border border-slate-900 text-white hover:bg-slate-800 transition-all shadow-md flex items-center gap-1.5 font-semibold text-xs"
+                >
+                  {copiedBody ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-400" /> Copied Body!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" /> Copy Message Body
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

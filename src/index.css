@@ -85,10 +85,14 @@
     @apply bg-primary text-white shadow-sm;
   }
 
-  /* Prevent Radix Dialog shaking conflicts with global transitions */
+  /* Prevent Radix Dialog shaking and position conflicts with global transitions & hovers */
   [role="dialog"], 
+  [role="dialog"]:hover,
   div[class*="DialogContent"], 
-  div[class*="dialog-content"] {
+  div[class*="DialogContent"]:hover,
+  div[class*="dialog-content"],
+  div[class*="dialog-content"]:hover {
     transition: none !important;
+    transform: translate(-50%, -50%) !important;
   }
 }

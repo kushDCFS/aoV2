@@ -55,7 +55,7 @@ export default function Home() {
               100% Free · Self-Service · No Sign-Up Required
             </span>
             <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-              The Equity Admissions Project.
+              Movement for Admissions Pathways and Success.
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-300 leading-relaxed">
               Free, actionable, self-serve playbooks for under-resourced students.

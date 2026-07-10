@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Mail, Copy, Check, Table2, Search, Sparkles, ExternalLink, Loader2, GraduationCap, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { emailTemplates, trackerExample, professorTemplates } from "@/lib/outreachData";
@@ -115,21 +116,7 @@ export default function OutreachLab() {
   const [copiedSubject, setCopiedSubject] = useState(false);
   const [copiedBody, setCopiedBody] = useState(false);
 
-  const [studentInfo, setStudentInfo] = useState({
-    name: localStorage.getItem("outreach_student_name") || "",
-    email: localStorage.getItem("outreach_student_email") || "",
-    grade: localStorage.getItem("outreach_student_grade") || "Junior",
-    highSchool: localStorage.getItem("outreach_student_highSchool") || "",
-    skills: localStorage.getItem("outreach_student_skills") || "Python, data analysis, literature reviews",
-  });
-
-  const handleStudentInfoChange = (key, value) => {
-    setStudentInfo((prev) => {
-      const updated = { ...prev, [key]: value };
-      localStorage.setItem(`outreach_student_${key}`, value);
-      return updated;
-    });
-  };
+  const { studentInfo, handleStudentInfoChange } = useOutletContext();
 
   useEffect(() => {
     setLoadingFilters(true);
@@ -238,52 +225,52 @@ export default function OutreachLab() {
   };
 
   return (
-    <div>
+    <div className="space-y-10">
       <PageHeader
         title="The Outreach Lab"
         subtitle="Search a database of active research professors from top universities, filter by major track, and dynamically draft personalized cold emails in seconds."
         icon={Mail}
       />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="professors" className="w-full space-y-8">
-          <TabsList className="grid w-full max-w-md grid-cols-2 bg-slate-100 p-1 rounded-xl">
+      <div className="w-full space-y-10">
+        <Tabs defaultValue="professors" className="w-full space-y-10">
+          <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/40 p-1.5 rounded-2xl">
             <TabsTrigger
               value="professors"
-              className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm text-slate-500"
+              className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ease-in-out data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md text-foreground/70"
             >
               <GraduationCap className="h-4 w-4" />
               Find Professors
             </TabsTrigger>
             <TabsTrigger
               value="playbooks"
-              className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm text-slate-500"
+              className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ease-in-out data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md text-foreground/70"
             >
               <BookOpen className="h-4 w-4" />
               Playbooks & Tracker
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="professors" className="space-y-6 outline-none">
+          <TabsContent value="professors" className="space-y-8 outline-none">
             {wakingUp && (
-              <div className="flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 p-4 text-amber-800 animate-pulse">
+              <div className="flex items-center gap-4 rounded-3xl bg-secondary border border-border/80 p-6 text-secondary-foreground animate-pulse shadow-sm">
                 <Loader2 className="h-5 w-5 animate-spin flex-shrink-0" />
                 <div className="text-sm">
-                  <strong>Waking up the database server...</strong> The search engine is hosted on a free Render server that falls asleep due to inactivity. This might take 30-40 seconds on the first request, thank you for your patience!
+                  <strong>Waking up the database server...</strong> The search engine is hosted on a Render server that falls asleep due to inactivity. This might take 30-40 seconds on the first request.
                 </div>
               </div>
             )}
 
-            <form onSubmit={handleSearchSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-              <h3 className="font-bold text-slate-900 text-lg">Filter & Search Engine</h3>
+            <form onSubmit={handleSearchSubmit} className="glass-card p-8 border border-white/40 shadow-xl shadow-indigo-950/5 space-y-6">
+              <h3 className="font-serif font-bold text-primary text-xl">Filter & Search Engine</h3>
               
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Major Track</label>
+              <div className="grid gap-6 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-foreground/50 uppercase tracking-wider">Major Track</label>
                   <select
                     value={selectedTrack}
                     onChange={(e) => setSelectedTrack(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-55 px-3.5 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100/50 transition-all"
+                    className="w-full rounded-2xl border border-border bg-[#FAF7F2]/50 px-4 py-3 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                   >
                     {majorTracks.map((track) => (
                       <option key={track.key} value={track.key}>
@@ -293,12 +280,12 @@ export default function OutreachLab() {
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">University</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-foreground/50 uppercase tracking-wider">University</label>
                   <select
                     value={selectedUniversity}
                     onChange={(e) => setSelectedUniversity(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-55 px-3.5 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100/50 transition-all"
+                    className="w-full rounded-2xl border border-border bg-[#FAF7F2]/50 px-4 py-3 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                     disabled={loadingFilters}
                   >
                     <option value="All">All Universities</option>
@@ -310,26 +297,26 @@ export default function OutreachLab() {
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Search Keywords</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-foreground/50 uppercase tracking-wider">Search Keywords</label>
                   <div className="relative">
                     <input
                       type="text"
                       placeholder="e.g. AI, genetics, cancer..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-55 pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100/50 transition-all"
+                      className="w-full rounded-2xl border border-border bg-[#FAF7F2]/50 pl-11 pr-4 py-3 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                     />
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-slate-100">
+              <div className="flex justify-end pt-4 border-t border-border/40">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-all disabled:bg-slate-300"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md shadow-primary/10 transition-all duration-300 ease-in-out hover:bg-primary/95 hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                   Apply Search Query
@@ -338,12 +325,12 @@ export default function OutreachLab() {
             </form>
 
             {error && (
-              <div className="flex items-center gap-3 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-rose-800">
+              <div className="flex items-center gap-4 rounded-3xl bg-rose-50/50 border border-rose-200 p-6 text-rose-800 shadow-sm">
                 <AlertCircle className="h-5 w-5 flex-shrink-0" />
                 <span className="text-sm font-medium">{error}</span>
                 <button
                   onClick={() => fetchProfessors(true)}
-                  className="ml-auto inline-flex items-center gap-1 text-xs font-bold underline"
+                  className="ml-auto inline-flex items-center gap-1.5 text-xs font-bold underline hover:text-rose-900 transition-colors"
                 >
                   <RefreshCw className="h-3.5 w-3.5" /> Try again
                 </button>
@@ -351,56 +338,56 @@ export default function OutreachLab() {
             )}
 
             {professors.length === 0 && !loading && !error ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-4">
-                  <Search className="h-6 w-6" />
+              <div className="flex flex-col items-center justify-center py-24 text-center rounded-3xl border border-dashed border-border bg-card/50">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/40 text-foreground/50 mb-4">
+                  <Search className="h-7 w-7" />
                 </div>
-                <h4 className="font-bold text-slate-900 text-lg">No professors found</h4>
-                <p className="text-sm text-slate-500 max-w-sm mt-1">
+                <h4 className="font-serif font-bold text-primary text-xl">No professors found</h4>
+                <p className="text-sm text-foreground/70 max-w-sm mt-2">
                   Try clearing your keyword filters or broadening your search queries.
                 </p>
               </div>
             ) : (
-              <div className="space-y-8">
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-10">
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {professors.map((prof, idx) => (
                     <div
                       key={`${prof.id}-${idx}`}
-                      className="group flex flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all hover:border-indigo-200 hover:shadow-md hover:-translate-y-0.5 duration-200"
+                      className="group flex flex-col glass-card p-6 border border-white/40 shadow-md shadow-indigo-950/2"
                     >
-                      <div className="flex-1 space-y-3">
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+                      <div className="flex-1 space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="inline-flex items-center rounded-full bg-indigo-50/60 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100">
                             {prof.university}
                           </span>
                           {prof.department && (
-                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                            <span className="inline-flex items-center rounded-full bg-muted/30 px-2.5 py-0.5 text-xs font-medium text-foreground/70">
                               {prof.department}
                             </span>
                           )}
                         </div>
 
-                        <h4 className="font-heading text-lg font-bold text-slate-900 group-hover:text-indigo-800 transition-colors">
+                        <h4 className="font-serif text-base font-bold text-primary group-hover:text-accent transition-colors duration-300">
                           {prof.name}
                         </h4>
 
                         <div className="space-y-1">
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Research Domain</span>
-                          <p className="text-sm text-slate-700 font-semibold line-clamp-1">
+                          <span className="text-[9px] font-bold text-foreground/50 uppercase tracking-wider">Research Domain</span>
+                          <p className="text-xs text-foreground/80 font-semibold line-clamp-1">
                             {prof.domain || "N/A"}
                           </p>
                         </div>
 
                         <div className="space-y-1">
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Keywords & Projects</span>
-                          <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">
+                          <span className="text-[9px] font-bold text-foreground/50 uppercase tracking-wider">Keywords & Projects</span>
+                          <p className="text-xs text-foreground/70 leading-relaxed line-clamp-3">
                             {prof.ai_keywords || prof.research_interests || "No research details provided."}
                           </p>
                         </div>
                       </div>
 
-                      <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-xs font-mono text-slate-400">
+                      <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between">
+                        <span className="text-xs font-mono text-foreground/50">
                           {prof.email !== "N/A" ? prof.email : "Email not listed"}
                         </span>
                         
@@ -409,7 +396,7 @@ export default function OutreachLab() {
                             setSelectedProf(prof);
                             setIsDialogOpen(true);
                           }}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 shadow-sm transition-all"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary/95 shadow-md shadow-primary/10 transition-all duration-300 ease-in-out hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99]"
                         >
                           <Sparkles className="h-3 w-3" />
                           Draft Email
@@ -420,17 +407,17 @@ export default function OutreachLab() {
 
                   {loading && professors.length === 0 && (
                     Array.from({ length: 6 }).map((_, i) => (
-                      <div key={i} className="h-56 animate-pulse rounded-2xl bg-slate-100 border border-slate-200" />
+                      <div key={i} className="h-56 animate-pulse rounded-3xl bg-muted/30 border border-border/50" />
                     ))
                   )}
                 </div>
 
                 {hasMore && !error && (
-                  <div className="flex justify-center pt-2">
+                  <div className="flex justify-center pt-4">
                     <button
                       onClick={() => fetchProfessors(false)}
                       disabled={loading}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-xl border border-border/85 bg-white hover:bg-muted/10 px-8 py-4 text-sm font-semibold text-primary shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
                     >
                       {loading ? (
                         <>
@@ -446,52 +433,57 @@ export default function OutreachLab() {
             )}
           </TabsContent>
 
-          <TabsContent value="playbooks" className="space-y-16 outline-none">
-            <section>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Cold Email Playbook</h2>
-              <p className="text-slate-500 mb-6 max-w-3xl">
-                Three fill-in-the-blank email templates for high school students. Replace every bracketed placeholder with
-                your own information. Always attach a resume and send from a professional email address.
-              </p>
+          <TabsContent value="playbooks" className="space-y-12 outline-none">
+            <section className="space-y-6">
+              <div>
+                <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Outreach Strategy</span>
+                <h2 className="text-2xl font-serif font-bold text-primary">Cold Email Playbook</h2>
+                <p className="text-foreground/70 mt-1 max-w-3xl">
+                  Three fill-in-the-blank email templates for high school students. Replace every bracketed placeholder with
+                  your own information.
+                </p>
+              </div>
 
-              <div className="space-y-6">
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
                 {emailTemplates.map((template) => (
-                  <div key={template.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                    <div className="flex items-center justify-between bg-slate-50 px-5 sm:px-6 py-4 border-b border-slate-200">
-                      <h3 className="font-bold text-slate-900 text-sm sm:text-base">{template.title}</h3>
+                  <div key={template.id} className="glass-card flex flex-col justify-between overflow-hidden shadow-sm border border-white/40">
+                    <div className="flex items-center justify-between bg-muted/20 px-6 py-4.5 border-b border-border/40">
+                      <h3 className="font-serif font-bold text-primary text-sm">{template.title}</h3>
                       <button
                         onClick={() => handleCopyPlaybook(template)}
-                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-300 ease-in-out hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] ${
                           copiedId === template.id
                             ? "bg-emerald-100 text-emerald-700"
-                            : "bg-slate-900 text-white hover:bg-slate-700"
+                            : "bg-primary text-white hover:bg-primary/90"
                         }`}
                       >
                         {copiedId === template.id ? (
                           <>
-                            <Check className="h-3.5 w-3.5" /> Copied!
+                            <Check className="h-3 w-3" /> Copied!
                           </>
                         ) : (
                           <>
-                            <Copy className="h-3.5 w-3.5" /> Copy
+                            <Copy className="h-3 w-3" /> Copy
                           </>
                         )}
                       </button>
                     </div>
-                    <div className="p-5 sm:p-6">
-                      <p className="text-sm font-semibold text-slate-500 mb-3 pb-3 border-b border-slate-100">
-                        {template.subject}
-                      </p>
-                      <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
-                        {template.body}
-                      </pre>
+                    <div className="p-6 flex-1 flex flex-col justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-foreground/50 mb-3 pb-3 border-b border-border/40">
+                          {template.subject}
+                        </p>
+                        <pre className="whitespace-pre-wrap font-mono text-[11px] text-foreground/80 leading-relaxed max-h-48 overflow-y-auto">
+                          {template.body}
+                        </pre>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 rounded-xl bg-blue-50 border border-blue-200 p-5">
-                <p className="text-sm text-blue-800 leading-relaxed">
+              <div className="glass-card p-6 border border-white/40 shadow-xl shadow-indigo-950/5">
+                <p className="text-sm text-secondary-foreground leading-relaxed">
                   <strong>Pro tip:</strong> Send emails on Tuesday or Wednesday mornings (8-10 AM). Follow up exactly 7 days
                   after your first email if you don't hear back. One polite follow-up is expected and shows persistence —
                   two is pushy.
@@ -499,64 +491,85 @@ export default function OutreachLab() {
               </div>
             </section>
 
-            <section>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
-                  <Table2 className="h-5 w-5 text-slate-600" />
+            {/* Tracker Matrix and instructions: 2-column workspace */}
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent border border-accent/20">
+                    <Table2 className="h-5.5 w-5.5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Worksheets</span>
+                    <h2 className="text-2xl font-serif font-bold text-primary">Tracker Matrix</h2>
+                  </div>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Tracker Matrix</h2>
-              </div>
-              <p className="text-slate-500 mb-6 max-w-3xl">
-                Recreate this table in Google Sheets (free) or Excel to track every outreach email you send. The example
-                rows below show how to use it. Never send an email without logging it here first.
-              </p>
-
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="bg-slate-900 text-white">
-                      <th className="px-4 py-3.5 font-semibold">Organization / Professor Name</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Date Sent</th>
-                      <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Follow-up Date</th>
-                      <th className="px-4 py-3.5 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {trackerExample.map((row, i) => (
-                      <tr key={i} className="bg-white hover:bg-slate-50 transition-colors">
-                        <td className="px-4 py-3.5 font-medium text-slate-900">{row.organization}</td>
-                        <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">{row.dateSent}</td>
-                        <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">{row.followUpDate}</td>
-                        <td className="px-4 py-3.5">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              row.status === "No Response"
-                                ? "bg-red-100 text-red-700"
-                                : row.status === "Awaiting Reply"
-                                ? "bg-amber-100 text-amber-700"
-                                : row.status === "Interview Scheduled"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-emerald-100 text-emerald-700"
-                            }`}
-                          >
-                            {row.status}
-                          </span>
-                        </td>
+                
+                <div className="overflow-x-auto rounded-3xl border border-border/50 bg-white/40 shadow-sm">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="bg-primary text-primary-foreground">
+                        <th className="px-5 py-4 font-semibold">Organization / Professor Name</th>
+                        <th className="px-5 py-4 font-semibold whitespace-nowrap">Date Sent</th>
+                        <th className="px-5 py-4 font-semibold whitespace-nowrap">Follow-up Date</th>
+                        <th className="px-5 py-4 font-semibold">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {trackerExample.map((row, i) => (
+                        <tr key={i} className="hover:bg-white/60 transition-colors duration-300">
+                          <td className="px-5 py-4 font-serif font-bold text-primary">{row.organization}</td>
+                          <td className="px-5 py-4 text-foreground/80 whitespace-nowrap">{row.dateSent}</td>
+                          <td className="px-5 py-4 text-foreground/80 whitespace-nowrap">{row.followUpDate}</td>
+                          <td className="px-5 py-4">
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                row.status === "No Response"
+                                  ? "bg-red-100/80 text-red-700 ring-1 ring-red-200"
+                                  : row.status === "Awaiting Reply"
+                                  ? "bg-amber-100/80 text-amber-700 ring-1 ring-amber-200"
+                                  : row.status === "Interview Scheduled"
+                                  ? "bg-blue-100/80 text-blue-700 ring-1 ring-blue-200"
+                                  : "bg-emerald-100/80 text-emerald-700 ring-1 ring-emerald-200"
+                              }`}
+                            >
+                              {row.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 p-5">
-                <h4 className="font-bold text-slate-900 mb-2 text-sm">How to recreate this in Google Sheets:</h4>
-                <ol className="space-y-1.5 text-sm text-slate-600">
-                  <li>1. Go to sheets.google.com and create a blank spreadsheet (free with a Google account).</li>
-                  <li>2. In row 1, enter the column headers: Organization/Professor Name, Date Sent, Follow-up Date, Status.</li>
-                  <li>3. Add a 5th column for "Notes" to track conversation details and next steps.</li>
-                  <li>4. Use Data → Data Validation on the Status column to create a dropdown: No Response, Awaiting Reply, Replied, Interview Scheduled, Accepted, Declined.</li>
-                  <li>5. Set a conditional format: red for "No Response," amber for "Awaiting Reply," green for positive statuses.</li>
-                </ol>
+              {/* Instructions column */}
+              <div className="glass-card p-8 border border-white/40 shadow-xl shadow-indigo-950/5 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Setup Instructions</span>
+                  <h4 className="font-serif font-bold text-primary text-base mt-0.5 mb-4">Recreate in Google Sheets:</h4>
+                  <ol className="space-y-3.5 text-xs text-foreground/80 leading-relaxed">
+                    <li>
+                      <strong className="text-primary">1. New Spreadsheet:</strong> Go to sheets.google.com and create a blank spreadsheet.
+                    </li>
+                    <li>
+                      <strong className="text-primary">2. Add Headers:</strong> Enter Organization, Date Sent, Follow-up Date, and Status in row 1.
+                    </li>
+                    <li>
+                      <strong className="text-primary">3. Notes Field:</strong> Add a column for notes to log communication highlights.
+                    </li>
+                    <li>
+                      <strong className="text-primary">4. Validation dropdowns:</strong> Use Data → Data Validation for Status: No Response, Awaiting Reply, Replied, Accepted, Declined.
+                    </li>
+                  </ol>
+                </div>
+                <a
+                  href="https://sheets.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-xs font-semibold text-white shadow-md shadow-primary/10 transition-all duration-300 ease-in-out hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99]"
+                >
+                  Open Google Sheets <ExternalLink className="h-3.5 w-3.5" />
+                </a>
               </div>
             </section>
           </TabsContent>
@@ -564,50 +577,50 @@ export default function OutreachLab() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-250">
-          <DialogHeader className="border-b border-slate-100 pb-4">
-            <DialogTitle className="text-xl font-heading font-bold text-slate-950 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-indigo-600 animate-pulse" />
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white/95 backdrop-blur-md p-8 shadow-2xl border border-white/50">
+          <DialogHeader className="border-b border-border/40 pb-4">
+            <DialogTitle className="text-xl font-serif font-bold text-primary flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-accent animate-pulse" />
               Dynamic Email Copilot
             </DialogTitle>
-            <DialogDescription className="text-slate-500 text-sm">
-              Drafting a personalized cold email for <span className="font-bold text-slate-800">{selectedProf?.name}</span> at <span className="font-bold text-slate-800">{selectedProf?.university}</span>.
+            <DialogDescription className="text-foreground/70 text-sm">
+              Drafting a personalized cold email for <span className="font-bold text-foreground">{selectedProf?.name}</span> at <span className="font-bold text-foreground">{selectedProf?.university}</span>.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-6 md:grid-cols-5 pt-4">
-            <div className="md:col-span-2 space-y-4 border-r border-slate-100 pr-0 md:pr-6">
-              <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider text-indigo-600">Your Profiles</h4>
+          <div className="grid gap-8 md:grid-cols-5 pt-6">
+            <div className="md:col-span-2 space-y-4 border-r border-border/40 pr-0 md:pr-6">
+              <h4 className="font-serif font-bold text-accent text-sm uppercase tracking-wider">Your Profile</h4>
               
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-650">Your Full Name</label>
+                <label className="text-xs font-bold text-foreground/60">Your Full Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Alex Chen"
                   value={studentInfo.name}
                   onChange={(e) => handleStudentInfoChange("name", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                  className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-650">Your Email Address</label>
+                <label className="text-xs font-bold text-foreground/60">Your Email Address</label>
                 <input
                   type="email"
                   placeholder="e.g. alexchen@gmail.com"
                   value={studentInfo.email}
                   onChange={(e) => handleStudentInfoChange("email", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                  className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-650">Grade Level</label>
+                  <label className="text-xs font-bold text-foreground/60">Grade Level</label>
                   <select
                     value={studentInfo.grade}
                     onChange={(e) => handleStudentInfoChange("grade", e.target.value)}
-                    className="w-full rounded-xl border border-slate-250 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                    className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                   >
                     <option value="Freshman">Freshman</option>
                     <option value="Sophomore">Sophomore</option>
@@ -617,34 +630,34 @@ export default function OutreachLab() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-650">High School</label>
+                  <label className="text-xs font-bold text-foreground/60">High School</label>
                   <input
                     type="text"
                     placeholder="Oakridge High"
                     value={studentInfo.highSchool}
                     onChange={(e) => handleStudentInfoChange("highSchool", e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                    className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-650">Relevant Skills (comma separated)</label>
+                <label className="text-xs font-bold text-foreground/60">Relevant Skills</label>
                 <textarea
                   rows="2"
                   placeholder="Python, basic statistical analysis, literature reviews..."
                   value={studentInfo.skills}
                   onChange={(e) => handleStudentInfoChange("skills", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all resize-none"
+                  className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out resize-none"
                 />
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <label className="text-xs font-semibold text-slate-650">Select Outreach Blueprint</label>
+              <div className="space-y-1.5 pt-4 border-t border-border/40">
+                <label className="text-xs font-bold text-foreground/60">Select Outreach Blueprint</label>
                 <select
                   value={selectedTemplateId}
                   onChange={(e) => setSelectedTemplateId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                  className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
                 >
                   {professorTemplates.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -657,40 +670,40 @@ export default function OutreachLab() {
 
             <div className="md:col-span-3 flex flex-col space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider text-indigo-600">Generated Draft</h4>
+                <h4 className="font-serif font-bold text-accent text-sm uppercase tracking-wider">Generated Draft</h4>
                 {selectedProf?.email && selectedProf.email !== "N/A" && (
                   <a
                     href={`mailto:${selectedProf.email}?subject=${encodeURIComponent(compiled.subject)}&body=${encodeURIComponent(compiled.body)}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:text-primary transition-colors duration-300"
                   >
                     Open in Mail app <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 relative group">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Subject</div>
-                <div className="text-sm font-semibold text-slate-800 pr-10">{compiled.subject}</div>
+              <div className="rounded-2xl border border-border/60 bg-background px-5 py-4 relative group">
+                <div className="text-[10px] font-bold text-foreground/50 uppercase tracking-wider mb-1">Subject</div>
+                <div className="text-sm font-semibold text-foreground/80 pr-10">{compiled.subject}</div>
                 <button
                   onClick={handleCopySubject}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 bg-white border border-slate-200 text-slate-500 hover:text-slate-800 transition-all"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-xl p-2 bg-card border border-border/60 text-foreground/60 hover:text-primary hover:shadow-md transition-all duration-300 ease-in-out"
                   title="Copy Subject"
                 >
                   {copiedSubject ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                 </button>
               </div>
 
-              <div className="flex-1 rounded-xl border border-slate-200 bg-slate-50 p-4 relative flex flex-col">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Message Body</div>
-                <div className="text-xs text-slate-550 mb-2 border-b border-slate-200 pb-2">
-                  To: <span className="font-mono text-slate-700">{selectedProf?.email !== "N/A" ? selectedProf?.email : "Name not found (check directory)"}</span>
+              <div className="flex-1 rounded-2xl border border-border/60 bg-background p-6 relative flex flex-col">
+                <div className="text-[10px] font-bold text-foreground/50 uppercase tracking-wider mb-2">Message Body</div>
+                <div className="text-xs text-foreground/60 mb-2 border-b border-border/40 pb-2">
+                  To: <span className="font-mono text-foreground/80">{selectedProf?.email !== "N/A" ? selectedProf?.email : "Name not found (check directory)"}</span>
                 </div>
-                <div className="flex-1 overflow-y-auto max-h-[30vh] text-sm text-slate-700 font-mono leading-relaxed whitespace-pre-wrap pr-4">
+                <div className="flex-1 overflow-y-auto max-h-[30vh] text-sm text-foreground/85 font-mono leading-relaxed whitespace-pre-wrap pr-4">
                   {compiled.body}
                 </div>
                 <button
                   onClick={handleCopyBody}
-                  className="absolute right-4 bottom-4 rounded-xl p-2.5 bg-slate-900 border border-slate-900 text-white hover:bg-slate-800 transition-all shadow-md flex items-center gap-1.5 font-semibold text-xs"
+                  className="absolute right-4 bottom-4 rounded-xl p-3 bg-primary border border-primary text-white hover:bg-primary/95 transition-all duration-300 ease-in-out hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] flex items-center gap-1.5 font-semibold text-xs"
                 >
                   {copiedBody ? (
                     <>

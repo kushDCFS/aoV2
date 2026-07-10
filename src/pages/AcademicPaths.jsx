@@ -1,4 +1,5 @@
 import React from "react";
+import { useOutletContext } from "react-router-dom";
 import { BookOpen, GraduationCap, ExternalLink, CheckCircle2 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 
@@ -54,66 +55,89 @@ const satSteps = [
 ];
 
 export default function AcademicPaths() {
+  const { checkedWeeks, toggleWeek, checkedSatSteps, toggleSatStep } = useOutletContext();
+
   return (
-    <div>
+    <div className="space-y-10">
       <PageHeader
         title="Academic Paths"
         subtitle="Structured, zero-cost frameworks for AP/IB exams and SAT prep. No paid courses, no tutors — just free resources used in a proven system."
         icon={BookOpen}
       />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-16 sm:space-y-20">
+      <div className="space-y-12">
         {/* Section 1: AP & IB Bootcamps */}
-        <section>
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">AP & IB Self-Study Bootcamps</h2>
-            <p className="mt-2 text-slate-500 max-w-3xl">
-              An 8-week structured study timeline that maps free resources to each phase of AP/IB exam preparation.
-              Follow this schedule for each AP/IB subject you're self-studying.
-            </p>
+        <section className="glass-card p-8 border border-white/40 shadow-xl shadow-indigo-950/5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+              <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Standardized Testing</span>
+              <h2 className="text-2xl font-serif font-bold text-primary mt-0.5">AP & IB Self-Study Bootcamps</h2>
+              <p className="mt-1 text-sm text-foreground/70 max-w-2xl leading-relaxed">
+                An 8-week structured study timeline. Check off each week as you complete it to sync your dashboard progress.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent border border-accent/20">
+                {checkedWeeks.length} / 8 Weeks Done
+              </span>
+            </div>
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-border/50 bg-white/40">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-slate-900 text-white">
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Week</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Phase</th>
-                  <th className="px-4 py-3.5 font-semibold">Key Actions</th>
-                  <th className="px-4 py-3.5 font-semibold">Free Resources</th>
+                <tr className="bg-primary text-primary-foreground">
+                  <th className="px-5 py-4.5 font-semibold whitespace-nowrap">Week</th>
+                  <th className="px-5 py-4.5 font-semibold whitespace-nowrap">Phase</th>
+                  <th className="px-5 py-4.5 font-semibold">Key Actions</th>
+                  <th className="px-5 py-4.5 font-semibold">Free Resources</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {apBootcampWeeks.map((row) => (
-                  <tr key={row.week} className="bg-white hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3.5 font-semibold text-blue-600 whitespace-nowrap">{row.week}</td>
-                    <td className="px-4 py-3.5 font-medium text-slate-900 whitespace-nowrap">{row.phase}</td>
-                    <td className="px-4 py-3.5 text-slate-600">{row.actions}</td>
-                    <td className="px-4 py-3.5 text-slate-600">{row.resources}</td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-border/40">
+                {apBootcampWeeks.map((row) => {
+                  const weekNum = parseInt(row.week);
+                  const isChecked = checkedWeeks.includes(weekNum);
+                  return (
+                    <tr key={row.week} className={`transition-colors duration-300 ${isChecked ? "bg-accent/5 hover:bg-accent/10" : "hover:bg-white/60"}`}>
+                      <td className="px-5 py-4.5 font-bold whitespace-nowrap">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleWeek(weekNum)}
+                            className="rounded border-border text-accent focus:ring-accent/25 h-4.5 w-4.5 transition-all cursor-pointer"
+                          />
+                          <span className={isChecked ? "text-accent line-through" : "text-foreground"}>Week {row.week}</span>
+                        </label>
+                      </td>
+                      <td className="px-5 py-4.5 font-serif font-bold text-primary whitespace-nowrap">{row.phase}</td>
+                      <td className="px-5 py-4.5 text-foreground/80 leading-relaxed">{row.actions}</td>
+                      <td className="px-5 py-4.5 text-foreground/80 leading-relaxed">{row.resources}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
           {/* Free Resources */}
-          <div className="mt-8">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Core Free Resources</h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 pt-8 border-t border-border/40">
+            <h3 className="text-lg font-serif font-bold text-primary mb-6">Core Free Resources</h3>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {freeResources.map((res) => (
                 <a
                   key={res.name}
                   href={res.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md"
+                  className="group rounded-2xl border border-border/50 bg-white/50 p-6 transition-all duration-300 ease-in-out hover:bg-white hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <h4 className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{res.name}</h4>
-                    <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-serif font-bold text-primary group-hover:text-accent transition-colors duration-300">{res.name}</h4>
+                    <ExternalLink className="h-4 w-4 text-foreground/40 group-hover:text-accent transition-colors duration-300" />
                   </div>
-                  <p className="text-sm text-slate-500 leading-relaxed">{res.description}</p>
+                  <p className="text-xs text-foreground/75 leading-relaxed">{res.description}</p>
                 </a>
               ))}
             </div>
@@ -121,42 +145,60 @@ export default function AcademicPaths() {
         </section>
 
         {/* Section 2: SAT Framework */}
-        <section>
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100">
-                <GraduationCap className="h-5 w-5 text-violet-600" />
+        <section className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <GraduationCap className="h-5.5 w-5.5" />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Zero-Dollar SAT 1500+ Framework</h2>
+              <div>
+                <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Standardized Testing</span>
+                <h2 className="text-2xl font-serif font-bold text-primary">Zero-Dollar SAT 1500+ Framework</h2>
+              </div>
             </div>
-            <p className="mt-2 text-slate-500 max-w-3xl">
-              A step-by-step guide to setting up a daily Khan Academy feedback loop that can take you from any starting
-              score to 1500+ — without spending a dollar on prep courses or tutors.
-            </p>
+            <span className="text-xs font-semibold text-foreground/50">{checkedSatSteps.length} / 7 Completed</span>
           </div>
 
-          <div className="space-y-4">
-            {satSteps.map((step, i) => (
-              <div key={i} className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white">
-                  {i + 1}
+          <div className="grid gap-6 md:grid-cols-2">
+            {satSteps.map((step, i) => {
+              const isStepChecked = checkedSatSteps.includes(i);
+              return (
+                <div
+                  key={i}
+                  onClick={() => toggleSatStep(i)}
+                  className={`glass-card p-8 flex gap-5 hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-300 border border-white/40 shadow-md shadow-indigo-950/2 cursor-pointer ${
+                    isStepChecked ? "bg-accent/5 hover:bg-accent/10 border-accent/30" : ""
+                  }`}
+                >
+                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all duration-350 ${
+                    isStepChecked ? "bg-accent text-white" : "bg-primary text-white"
+                  }`}>
+                    {isStepChecked ? "✓" : i + 1}
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-bold text-primary text-base mb-1.5 flex items-center gap-2">
+                      {step.title}
+                      {isStepChecked && <span className="text-xs text-accent font-semibold">(Completed)</span>}
+                    </h3>
+                    <p className="text-xs text-foreground/80 leading-relaxed">{step.content}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 mb-1">{step.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{step.content}</p>
-                </div>
+              );
+            })}
+          </div>
+
+          <div className="glass-card p-8 border border-white/40 shadow-xl shadow-indigo-950/5 relative overflow-hidden bg-gradient-to-r from-accent/5 to-transparent">
+            <div className="flex items-start gap-4">
+              <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-accent mt-0.5" />
+              <div>
+                <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Core Insight</span>
+                <h4 className="font-serif font-bold text-primary text-lg mt-0.5">Mistakes Journal Strategy</h4>
+                <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
+                  The students who score 1500+ aren't smarter — they just review their mistakes more systematically. 
+                  The mistakes journal is what separates a 1400 from a 1550. Every wrong answer is a free lesson 
+                  if you write down why you missed it.
+                </p>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-xl bg-emerald-50 border border-emerald-200 p-5">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600 mt-0.5" />
-              <p className="text-sm text-emerald-800 leading-relaxed">
-                <strong>The key insight:</strong> The students who score 1500+ aren't smarter — they just review their
-                mistakes more systematically. The mistakes journal is what separates a 1400 from a 1550. Every wrong
-                answer is a free lesson if you write down why you missed it.
-              </p>
             </div>
           </div>
         </section>

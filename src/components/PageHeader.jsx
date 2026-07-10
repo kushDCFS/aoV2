@@ -2,15 +2,17 @@ import React from "react";
 
 export default function PageHeader({ title, subtitle, icon: Icon }) {
   return (
-    <div className="border-b border-slate-800 bg-slate-900">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 mb-8 border-b border-border/40">
+      <div className="flex items-center gap-4">
         {Icon && (
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
-            <Icon className="h-6 w-6 text-white" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-border/60 text-primary shadow-sm shadow-indigo-950/5">
+            <Icon className="h-5.5 w-5.5" />
           </div>
         )}
-        <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-3 text-lg text-slate-300 max-w-2xl leading-relaxed">{subtitle}</p>}
+        <div>
+          <h1 className="text-3xl font-serif font-extrabold tracking-tight text-primary leading-none">{title}</h1>
+          {subtitle && <p className="text-sm text-foreground/70 mt-2 max-w-2xl leading-relaxed">{subtitle}</p>}
+        </div>
       </div>
     </div>
   );

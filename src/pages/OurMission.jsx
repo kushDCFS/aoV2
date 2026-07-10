@@ -59,14 +59,14 @@ export default function OurMission() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="flex gap-4 p-5 rounded-2xl border border-slate-200 bg-white"
+                className="flex gap-6 p-8 rounded-3xl border border-border/60 bg-card transition-all duration-300 ease-in-out hover:border-accent/45 hover:-translate-y-0.5 hover:shadow-lg"
               >
-                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${pillar.color}`}>
-                  <pillar.icon className="h-5 w-5 text-white" />
+                <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${pillar.color} bg-primary/10 text-primary border border-primary/20`}>
+                  <pillar.icon className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">{pillar.title}</h3>
-                  <p className="mt-1 text-sm text-slate-500 leading-relaxed">
+                  <h3 className="text-xl font-serif font-bold text-primary">{pillar.title}</h3>
+                  <p className="mt-2 text-sm text-foreground/75 leading-relaxed">
                     {pillar.description}
                   </p>
                 </div>
@@ -76,13 +76,13 @@ export default function OurMission() {
         </section>
 
         {/* Disclaimer / Call to Action */}
-        <section className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+        <section className="rounded-3xl border border-border/60 bg-secondary/30 p-8 sm:p-10 flex flex-col sm:flex-row gap-8 items-start shadow-sm">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-secondary-foreground/10 text-secondary-foreground">
             <ShieldAlert className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Democratizing Knowledge, Not Selling Services</h3>
-            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+            <h3 className="text-xl font-serif font-bold text-primary">Democratizing Knowledge, Not Selling Services</h3>
+            <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
               Please note that Movement for Admissions Pathways and Success is a self-service resources directory. We do not solicit personal details, sell consulting packages, or offer 1-on-1 editing. We provide the strategies and tools; you provide the dedication and drive to write your own future.
             </p>
           </div>

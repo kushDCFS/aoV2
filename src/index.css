@@ -4,28 +4,28 @@
 
 @layer base {
   :root {
-    --background: 36 28% 97.5%; /* Soft off-white / Warm cream (#FCFAF7) */
-    --foreground: 224 40% 12%; /* Approaches dark navy charcoal */
-    --card: 0 0% 100%;
-    --card-foreground: 224 40% 12%;
+    --background: 38 27% 96%; /* Soft warm cream canvas (#FAF7F2) */
+    --foreground: 244 47% 15%; /* Deep navy/indigo for main text (#121132) */
+    --card: 38 30% 99%; /* Extremely soft off-white for cards (#FFFDFB) */
+    --card-foreground: 244 47% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 40% 12%;
-    --primary: 224 71% 25%; /* Approachable warm navy/indigo (#112F6B) */
+    --popover-foreground: 244 47% 15%;
+    --primary: 244 47% 20%; /* Deep indigo/navy header & primary CTA (#1E1B4B) */
     --primary-foreground: 0 0% 100%;
-    --secondary: 35 60% 94%; /* Soft warm amber cream */
-    --secondary-foreground: 35 80% 25%; /* Muted warm amber text */
-    --muted: 224 12% 95%;
-    --muted-foreground: 224 15% 45%;
-    --accent: 174 60% 45%; /* Soft friendly teal */
+    --secondary: 45 100% 92%; /* Soft warm amber cream (#FEF3C7) */
+    --secondary-foreground: 38 92% 37%; /* Dark warm amber text (#B45309) */
+    --muted: 38 15% 91%; /* Muted warm gray */
+    --muted-foreground: 244 15% 45%;
+    --accent: 172 77% 26%; /* Soft premium teal (#0F766E) */
     --accent-foreground: 0 0% 100%;
     --destructive: 350 80% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 35 15% 91%;
-    --input: 35 15% 91%;
-    --ring: 224 71% 25%;
-    --radius: 1rem; /* Soft round corners */
-    --font-heading: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --border: 38 22% 88%; /* Soft warm borders (#EAE3D8) */
+    --input: 38 22% 88%;
+    --ring: 244 47% 20%;
+    --radius: 1rem; /* 16px soft pill-like corners */
+    --font-heading: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+    --font-body: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
   }
 }
 
@@ -40,49 +40,84 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    @apply tracking-tight font-bold;
+    @apply tracking-tight font-bold text-primary;
   }
 }
 
 /* CollegeVine-style Soft Redesign Components */
 @layer components {
-  /* Soft, Layered Cards */
-  .bg-white, .bg-card, [class*="bg-slate-50/50"], .rounded-2xl, [class*="rounded-2xl"], [class*="rounded-xl"] {
-    border: 1px solid rgba(228, 224, 215, 0.5) !important;
-    box-shadow: 0 4px 20px -2px rgba(18, 23, 38, 0.03), 0 2px 8px -1px rgba(18, 23, 38, 0.02) !important;
-    border-radius: 16px !important; /* 1rem rounded-2xl */
+  /* Premium Glassmorphic Cards */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 10px 30px -10px rgba(30, 27, 75, 0.04), 0 1px 3px -1px rgba(30, 27, 75, 0.02) !important;
+    border-radius: 24px !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
 
-  .bg-white:hover, .bg-card:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 12px 30px -4px rgba(18, 23, 38, 0.06), 0 4px 12px -2px rgba(18, 23, 38, 0.03) !important;
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.82) !important;
+    transform: scale(1.008) translateY(-2.5px) !important;
+    box-shadow: 0 20px 40px -15px rgba(30, 27, 75, 0.07), 0 2px 8px -2px rgba(30, 27, 75, 0.03) !important;
   }
 
-  /* Smooth Soft Buttons */
+  /* Soft, Layered Cards */
+  .bg-white, .bg-card, [class*="bg-slate-50/50"], .rounded-2xl, [class*="rounded-2xl"], [class*="rounded-xl"], .rounded-3xl, [class*="rounded-3xl"] {
+    border: 1px solid rgba(234, 227, 216, 0.4) !important;
+    box-shadow: 0 6px 24px -4px rgba(30, 27, 75, 0.02), 0 2px 10px -2px rgba(30, 27, 75, 0.01) !important;
+    border-radius: 20px !important; /* Large, soft corners */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .rounded-3xl, [class*="rounded-3xl"] {
+    border-radius: 24px !important;
+  }
+
+  /* Only apply hover translation to interactive elements that explicitly hover */
+  .hover-lift:hover,
+  a.bg-white:hover, 
+  a.bg-card:hover,
+  a.rounded-2xl:hover,
+  a.rounded-xl:hover,
+  a.rounded-3xl:hover,
+  [class*="hover:shadow-lg"]:hover,
+  [class*="hover:border-slate-300"]:hover,
+  .group:hover .group-hover\:-translate-y-0\.5 {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 16px 36px -6px rgba(30, 27, 75, 0.06), 0 6px 16px -3px rgba(30, 27, 75, 0.03) !important;
+  }
+
+  /* Smooth Soft Buttons & Inputs */
   button, .btn, [role="tab"], select, input, textarea {
-    border-radius: 10px !important;
+    border-radius: 12px !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
 
   button:hover:not(:disabled), .btn:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 16px -2px rgba(17, 47, 107, 0.12) !important;
+    transform: scale(1.01) translateY(-1px) !important;
+    box-shadow: 0 8px 20px -3px rgba(30, 27, 75, 0.08) !important;
   }
 
   button:active:not(:disabled) {
-    transform: translateY(0px) !important;
+    transform: scale(0.99) translateY(0px) !important;
   }
 
   /* Soft Input Focus Styles */
   input:focus, textarea:focus, select:focus {
-    @apply ring-2 ring-primary/20 border-primary/40;
+    @apply ring-2 ring-primary/20 border-primary/45;
     outline: none !important;
   }
 
   /* Custom Tab Styling */
   [role="tab"][data-state="active"] {
     @apply bg-primary text-white shadow-sm;
+  }
+
+  /* Progress Glow and Shimmer Animations */
+  .progress-glow {
+    box-shadow: 0 0 10px 1px rgba(15, 118, 110, 0.3);
   }
 
   /* Prevent Radix Dialog shaking and position conflicts with global transitions & hovers */

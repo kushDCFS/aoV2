@@ -84,4 +84,11 @@
   [role="tab"][data-state="active"] {
     @apply bg-primary text-white shadow-sm;
   }
+
+  /* Prevent Radix Dialog shaking conflicts with global transitions */
+  [role="dialog"], 
+  div[class*="DialogContent"], 
+  div[class*="dialog-content"] {
+    transition: none !important;
+  }
 }

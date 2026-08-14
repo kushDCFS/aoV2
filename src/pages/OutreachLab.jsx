@@ -260,19 +260,19 @@ export default function OutreachLab() {
       />
 
       <Tabs defaultValue="professors">
-        <TabsList className="panel inline-flex gap-1 p-1.5 h-auto bg-card">
+        <TabsList className="panel inline-flex flex-wrap gap-1 p-1.5 h-auto bg-card max-w-full">
           <TabsTrigger
             value="professors"
             className="flex items-center gap-2 rounded-lg px-4 h-9 text-[13.5px] font-medium text-foreground/55 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none transition-colors duration-150"
           >
-            <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.9} />
+            <GraduationCap className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.9} />
             Find professors
           </TabsTrigger>
           <TabsTrigger
             value="playbooks"
             className="flex items-center gap-2 rounded-lg px-4 h-9 text-[13.5px] font-medium text-foreground/55 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none transition-colors duration-150"
           >
-            <BookOpen className="h-3.5 w-3.5" strokeWidth={1.9} />
+            <BookOpen className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.9} />
             Playbooks &amp; tracker
           </TabsTrigger>
         </TabsList>

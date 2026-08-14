@@ -1,7 +1,9 @@
 import React from "react";
 import { useOutletContext } from "react-router-dom";
-import { BookOpen, GraduationCap, ExternalLink, CheckCircle2 } from "lucide-react";
+import { ExternalLink, Check } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import EditorialImage from "@/components/EditorialImage";
+import { Reveal, RevealGroup, RevealItem, CountUp } from "@/components/Reveal";
 
 const apBootcampWeeks = [
   { week: "1", phase: "Diagnostic & Planning", actions: "Take a full practice exam; identify 3 weakest units", resources: "AP Classroom (free via teacher), College Board AP Course Audit practice questions" },
@@ -25,32 +27,32 @@ const freeResources = [
 
 const satSteps = [
   {
-    title: "Establish Your Baseline",
+    title: "Establish your baseline",
     content: "Take a full-length official College Board SAT practice test (Tests 1-10 are free on Khan Academy / College Board). Score it using the official scoring guide. Log your score and identify your 3 weakest sub-skills.",
   },
   {
     title: "Connect Khan Academy to College Board",
-    content: "Create a free Khan Academy account and link it to your College Board account. This imports your PSAT/SAT scores and generates a personalized practice plan. Khan Academy's Official Digital SAT Prep is the only free resource with official College Board questions.",
+    content: "Create a free Khan Academy account and link it to your College Board account. This imports your PSAT/SAT scores and generates a personalized practice plan — the only free resource with official College Board questions.",
   },
   {
-    title: "Build the Daily Feedback Loop (6-8 weeks)",
-    content: "Monday-Friday: 45-60 minutes of targeted practice. 20 min: Watch Khan Academy lesson videos on your weakest sub-skill. 20 min: Complete practice exercises for that sub-skill. 10 min: Review every wrong answer and write down WHY you got it wrong and the correct approach in a mistakes journal. Saturday: 1 full section (Reading, Writing, or Math) under timed conditions. Sunday: Review all mistakes from the week and re-do any missed questions.",
+    title: "Build the daily feedback loop (6-8 weeks)",
+    content: "Monday–Friday: 45-60 minutes of targeted practice — 20 min lesson videos, 20 min exercises, 10 min reviewing every wrong answer in a mistakes journal. Saturday: one full timed section. Sunday: review the week's mistakes.",
   },
   {
-    title: "Maintain a Mistakes Journal (Critical)",
-    content: "Create a Google Doc or notebook with 3 columns: Question/Concept, Why I Got It Wrong, Correct Approach. Review this journal before every practice session. This is the single highest-yield habit for breaking 1500.",
+    title: "Maintain a mistakes journal",
+    content: "Three columns: Question/Concept, Why I Got It Wrong, Correct Approach. Review it before every session. This is the single highest-yield habit for breaking 1500.",
   },
   {
-    title: "Escalate Difficulty (Weeks 5-6)",
-    content: "Once you're scoring 700+ on a section, switch from Khan Academy exercises to full official practice tests. Take one full practice test per week under realistic conditions (timed, no extra breaks, morning start). Use Tests 7-10 (the most recent and relevant).",
+    title: "Escalate difficulty (weeks 5-6)",
+    content: "Once you're scoring 700+ on a section, switch from exercises to full official practice tests. One full test per week under realistic conditions. Use Tests 7-10 — the most recent and relevant.",
   },
   {
-    title: "Final 2-Week Sprint",
-    content: "Take 2-3 full practice tests in the final 2 weeks. Focus entirely on your mistakes journal. Do not learn new content — refine your test-taking strategy and timing.",
+    title: "Final two-week sprint",
+    content: "Take 2-3 full practice tests in the final two weeks. Focus entirely on your mistakes journal. Do not learn new content — refine your test-taking strategy and timing.",
   },
   {
-    title: "Test Day Protocol",
-    content: "Sleep 8 hours the night before. Eat a protein-rich breakfast. Arrive early with your admission ticket, ID, approved calculator, and snacks. Between sections, take deep breaths and reset — don't dwell on previous sections.",
+    title: "Test day protocol",
+    content: "Sleep 8 hours the night before. Eat a protein-rich breakfast. Arrive early with your admission ticket, ID, approved calculator, and snacks. Between sections, breathe and reset — don't dwell on the last one.",
   },
 ];
 
@@ -58,151 +60,184 @@ export default function AcademicPaths() {
   const { checkedWeeks, toggleWeek, checkedSatSteps, toggleSatStep } = useOutletContext();
 
   return (
-    <div className="space-y-10">
+    <div>
       <PageHeader
-        title="Academic Paths"
+        eyebrow="Playbook"
+        title="Academic paths"
         subtitle="Structured, zero-cost frameworks for AP/IB exams and SAT prep. No paid courses, no tutors — just free resources used in a proven system."
-        icon={BookOpen}
       />
 
-      <div className="space-y-12">
-        {/* Section 1: AP & IB Bootcamps */}
-        <section className="card p-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <div>
-              <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Standardized Testing</span>
-              <h2 className="text-2xl font-heading font-bold text-primary mt-0.5">AP & IB Self-Study Bootcamps</h2>
-              <p className="mt-1 text-sm text-foreground/70 max-w-2xl leading-relaxed">
-                An 8-week structured study timeline. Check off each week as you complete it to sync your dashboard progress.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent border border-accent/20">
-                {checkedWeeks.length} / 8 Weeks Done
-              </span>
-            </div>
+      {/* ── AP/IB section ────────────────────────────────────────────────── */}
+      <section>
+        <Reveal className="flex items-end justify-between gap-6 mb-6">
+          <div>
+            <div className="type-label text-accent">Standardized testing</div>
+            <h2 className="type-h2 mt-3 optical-left">AP &amp; IB self-study bootcamps</h2>
+            <p className="type-body text-foreground/58 mt-3 max-w-[52ch]">
+              An 8-week structured timeline. Check off each week as you complete it.
+            </p>
           </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto rounded-2xl border border-border/50 bg-white/40">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th className="px-5 font-semibold whitespace-nowrap">Week</th>
-                  <th className="px-5 font-semibold whitespace-nowrap">Phase</th>
-                  <th className="px-5 font-semibold">Key Actions</th>
-                  <th className="px-5 font-semibold">Free Resources</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {apBootcampWeeks.map((row) => {
-                  const weekNum = parseInt(row.week);
-                  const isChecked = checkedWeeks.includes(weekNum);
-                  return (
-                    <tr key={row.week} className={`transition-colors duration-300 ${isChecked ? "bg-accent/5 hover:bg-accent/10" : "hover:bg-white/60"}`}>
-                      <td className="px-5 font-bold whitespace-nowrap">
-                        <label className="flex items-center gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleWeek(weekNum)}
-                            className="rounded border-border text-accent focus:ring-accent/25 h-4.5 w-4.5 transition-all cursor-pointer"
-                          />
-                          <span className={isChecked ? "text-accent line-through" : "text-foreground"}>Week {row.week}</span>
-                        </label>
-                      </td>
-                      <td className="px-5 font-heading font-bold text-primary whitespace-nowrap">{row.phase}</td>
-                      <td className="px-5 text-foreground/80 leading-relaxed">{row.actions}</td>
-                      <td className="px-5 text-foreground/80 leading-relaxed">{row.resources}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Free Resources */}
-          <div className="mt-12 pt-8 border-t border-border/40">
-            <h3 className="text-lg font-heading font-bold text-primary mb-6">Core Free Resources</h3>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {freeResources.map((res) => (
-                <a
-                  key={res.name}
-                  href={res.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group rounded-2xl border border-border/50 bg-white/50 p-6 transition-all duration-300 ease-in-out hover:bg-white hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-heading font-bold text-primary group-hover:text-accent transition-colors duration-300">{res.name}</h4>
-                    <ExternalLink className="h-4 w-4 text-foreground/40 group-hover:text-accent transition-colors duration-300" />
-                  </div>
-                  <p className="text-xs text-foreground/75 leading-relaxed">{res.description}</p>
-                </a>
-              ))}
+          <div className="hidden sm:block text-right flex-shrink-0">
+            <div className="type-stat tnum">
+              <CountUp value={`${checkedWeeks.length}`} />
+              <span className="text-foreground/30">/8</span>
             </div>
+            <div className="type-small text-foreground/45 mt-1">weeks done</div>
           </div>
-        </section>
+        </Reveal>
 
-        {/* Section 2: SAT Framework */}
-        <section className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
-                <GraduationCap className="h-5.5 w-5.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Standardized Testing</span>
-                <h2 className="text-2xl font-heading font-bold text-primary">Zero-Dollar SAT 1500+ Framework</h2>
-              </div>
-            </div>
-            <span className="text-xs font-semibold text-foreground/50">{checkedSatSteps.length} / 7 Completed</span>
+        <Reveal delay={0.08} className="panel overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Week</th>
+                <th>Phase</th>
+                <th>Key actions</th>
+                <th>Free resources</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apBootcampWeeks.map((row) => {
+                const weekNum = parseInt(row.week, 10);
+                const isChecked = checkedWeeks.includes(weekNum);
+                return (
+                  <tr key={row.week}>
+                    <td>
+                      <label className="flex items-center gap-3 cursor-pointer press select-none">
+                        <span
+                          className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors duration-150 ${
+                            isChecked ? "bg-accent border-accent" : "border-border bg-card"
+                          }`}
+                        >
+                          {isChecked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleWeek(weekNum)}
+                          className="sr-only"
+                        />
+                        <span className={isChecked ? "text-foreground/40 line-through" : "text-foreground"}>
+                          Week {row.week}
+                        </span>
+                      </label>
+                    </td>
+                    <td className="font-medium text-foreground whitespace-nowrap">{row.phase}</td>
+                    <td className="min-w-[220px]">{row.actions}</td>
+                    <td className="min-w-[260px]">{row.resources}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </Reveal>
+      </section>
+
+      {/* ── Photo break ──────────────────────────────────────────────────
+          A wide, short cinematic strip — not a sidebar squeezed against a
+          4-column table, which cramped every cell. */}
+      <section className="mt-12">
+        <Reveal>
+          <EditorialImage
+            src="/images/academic-desk.jpg"
+            alt="An overhead flat-lay of a hand-drawn 8-week study grid in a spiral notebook, several rows checked off, morning light from the top-left."
+            ratio="21 / 6"
+            className="hidden sm:block"
+          />
+        </Reveal>
+      </section>
+
+      {/* ── Free resources ──────────────────────────────────────────────── */}
+      <section className="mt-16 pt-12 border-t border-border">
+        <Reveal>
+          <h3 className="type-h3">Core free resources</h3>
+        </Reveal>
+
+        <RevealGroup className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {freeResources.map((res) => (
+            <RevealItem key={res.name}>
+              <a
+                href={res.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group card p-6 flex h-full flex-col"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="type-h4 group-hover:text-accent transition-colors duration-150">
+                    {res.name}
+                  </h4>
+                  <ExternalLink className="h-3.5 w-3.5 text-foreground/25 group-hover:text-accent flex-shrink-0 transition-colors duration-150" />
+                </div>
+                <p className="type-small text-foreground/58 mt-2 flex-1">{res.description}</p>
+              </a>
+            </RevealItem>
+          ))}
+        </RevealGroup>
+      </section>
+
+      {/* ── SAT framework ────────────────────────────────────────────────── */}
+      <section className="mt-20 lg:mt-28">
+        <Reveal className="flex items-end justify-between gap-6 mb-8 pb-6 border-b border-border">
+          <div>
+            <div className="type-label text-accent">Standardized testing</div>
+            <h2 className="type-h2 mt-3 optical-left">Zero-dollar SAT 1500+ framework</h2>
           </div>
+          <span className="type-small text-foreground/45 tnum flex-shrink-0">
+            {checkedSatSteps.length} / 7 completed
+          </span>
+        </Reveal>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {satSteps.map((step, i) => {
-              const isStepChecked = checkedSatSteps.includes(i);
-              return (
-                <div
-                  key={i}
+        <RevealGroup className="grid gap-4 md:grid-cols-2">
+          {satSteps.map((step, i) => {
+            const isStepChecked = checkedSatSteps.includes(i);
+            return (
+              <RevealItem key={step.title}>
+                <button
+                  type="button"
                   onClick={() => toggleSatStep(i)}
-                  className={`card p-8 flex gap-5 hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-300 border border-white/40 shadow-md shadow-indigo-950/2 cursor-pointer ${
-                    isStepChecked ? "bg-accent/5 hover:bg-accent/10 border-accent/30" : ""
+                  className={`press card p-6 flex h-full gap-4 text-left transition-colors duration-150 ${
+                    isStepChecked ? "bg-accent/[0.04] border-accent/25" : ""
                   }`}
                 >
-                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all duration-350 ${
-                    isStepChecked ? "bg-accent text-white" : "bg-primary text-white"
-                  }`}>
-                    {isStepChecked ? "✓" : i + 1}
-                  </div>
+                  <span
+                    className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[13px] font-semibold tnum transition-colors duration-150 ${
+                      isStepChecked ? "bg-accent text-white" : "bg-muted text-foreground/60"
+                    }`}
+                  >
+                    {isStepChecked ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : i + 1}
+                  </span>
                   <div>
-                    <h3 className="font-heading font-bold text-primary text-base mb-1.5 flex items-center gap-2">
+                    <h3 className="type-h4 flex items-center gap-2">
                       {step.title}
-                      {isStepChecked && <span className="text-xs text-accent font-semibold">(Completed)</span>}
+                      {isStepChecked && (
+                        <span className="type-label text-accent normal-case tracking-normal font-medium">
+                          Completed
+                        </span>
+                      )}
                     </h3>
-                    <p className="text-xs text-foreground/80 leading-relaxed">{step.content}</p>
+                    <p className="type-small text-foreground/58 mt-1.5">{step.content}</p>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                </button>
+              </RevealItem>
+            );
+          })}
+        </RevealGroup>
 
-          <div className="card p-8 relative overflow-hidden bg-gradient-to-r from-accent/5 to-transparent">
-            <div className="flex items-start gap-4">
-              <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-accent mt-0.5" />
-              <div>
-                <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Core Insight</span>
-                <h4 className="font-heading font-bold text-primary text-lg mt-0.5">Mistakes Journal Strategy</h4>
-                <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
-                  The students who score 1500+ aren't smarter — they just review their mistakes more systematically. 
-                  The mistakes journal is what separates a 1400 from a 1550. Every wrong answer is a free lesson 
-                  if you write down why you missed it.
-                </p>
-              </div>
-            </div>
+        <Reveal delay={0.1} className="panel mt-4 p-7 flex items-start gap-4">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+            <Check className="h-4 w-4" strokeWidth={2} />
           </div>
-        </section>
-      </div>
+          <div>
+            <div className="type-label text-accent">Core insight</div>
+            <h4 className="type-h4 mt-1">Mistakes journal strategy</h4>
+            <p className="type-small text-foreground/58 mt-2 max-w-[62ch]">
+              The students who score 1500+ aren&rsquo;t smarter — they just review their mistakes
+              more systematically. The mistakes journal is what separates a 1400 from a 1550.
+              Every wrong answer is a free lesson if you write down why you missed it.
+            </p>
+          </div>
+        </Reveal>
+      </section>
     </div>
   );
 }

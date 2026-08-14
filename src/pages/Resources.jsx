@@ -56,7 +56,7 @@ export default function Resources() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
               <Compass className="h-5 w-5 text-white" />
             </div>
-            <span className="font-serif text-lg font-bold tracking-tight text-primary">Pathfinder</span>
+            <span className="font-heading text-lg font-bold tracking-tight text-primary">Pathfinder</span>
           </Link>
           <Link to="/" className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary">
             Home
@@ -67,7 +67,7 @@ export default function Resources() {
       {/* Header */}
       <div className="border-b border-border/80 bg-background/50">
         <div className="mx-auto max-w-6xl px-6 py-10">
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-primary sm:text-4xl">
             Resource Library
           </h1>
           <p className="mt-2 text-foreground/70">
@@ -134,7 +134,7 @@ export default function Resources() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/30">
               <Search className="h-7 w-7 text-foreground/50" />
             </div>
-            <h3 className="mt-4 font-serif text-lg font-semibold text-primary">No resources found</h3>
+            <h3 className="mt-4 font-heading text-lg font-semibold text-primary">No resources found</h3>
             <p className="mt-1 text-sm text-foreground/70">Try a different search or category.</p>
           </div>
         ) : (

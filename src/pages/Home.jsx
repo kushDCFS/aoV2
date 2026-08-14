@@ -1,546 +1,344 @@
-import React, { useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
-import { BookOpen, Users, Award, Mail, ArrowRight, BookText, Settings2, Sparkles, HelpCircle, CheckCircle2 } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  BookOpen,
+  Users,
+  Award,
+  Mail,
+  ArrowRight,
+  ArrowUpRight,
+} from "lucide-react";
+import { scholarships, noEssayScholarships } from "@/lib/scholarshipData";
+import { tracks } from "@/lib/trackData";
+import { emailTemplates, professorTemplates } from "@/lib/outreachData";
+import { searchLink } from "@/lib/stateScholarshipData";
+import EditorialImage from "@/components/EditorialImage";
+import { Reveal, RevealGroup, RevealItem, CountUp } from "@/components/Reveal";
+import { motion } from "framer-motion";
 
-const essayPrompts = [
-  { id: "1", title: "Background / Identity", text: "Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it. If this sounds like you, then please share your story." },
-  { id: "2", title: "Learning from Obstacles", text: "The lessons we take from obstacles we encounter can be fundamental to later success. Recount a time when you faced a challenge, setback, or failure. How did it affect you, and what did you learn from the experience?" },
-  { id: "3", title: "Challenging a Belief", text: "Reflect on a time when you questioned or challenged a belief or idea. What prompted your thinking? What was the outcome?" },
-  { id: "4", title: "Gratitude & Appreciation", text: "Reflect on something that someone has done for you that has made you happy or thankful in a surprising way. How has this gratitude affected or motivated you?" },
-  { id: "5", title: "Personal Growth", text: "Discuss an accomplishment, event, or realization that sparked a period of personal growth and a new understanding of yourself or others." },
-  { id: "6", title: "Captivated by a Topic", text: "Describe a topic, idea, or concept you find so engaging that it makes you lose all track of time. Why does it captivate you? What or who do you turn to when you want to learn more?" },
-  { id: "7", title: "Topic of Your Choice", text: "Share an essay on any topic of your choice. It can be one you've already written, one that responds to a different prompt, or one of your own design." },
+const totalScholarships = scholarships.length + noEssayScholarships.length;
+const totalTracks = tracks?.length || 6;
+const totalTemplates = (emailTemplates?.length || 0) + (professorTemplates?.length || 0);
+
+const stats = [
+  { label: "Scholarships listed", value: `${totalScholarships}+` },
+  { label: "Extracurricular tracks", value: `${totalTracks}` },
+  { label: "Outreach templates", value: `${totalTemplates}+` },
+  { label: "Cost to use any of it", value: "$0" },
 ];
 
-export default function Home() {
-  const {
-    studentInfo,
-    handleStudentInfoChange,
-    checkedWeeks,
-    checkedSatSteps,
-    checkedMilestones,
-    trackedScholarships,
-    toggleTrackScholarship,
-    essayOutline,
-    updateEssayOutline,
-  } = useOutletContext();
+const sections = [
+  {
+    to: "/academic-paths",
+    icon: BookOpen,
+    title: "Academic Paths",
+    description:
+      "8-week AP/IB self-study bootcamps and a zero-dollar SAT 1500+ framework built entirely on free resources.",
+    meta: "2 frameworks",
+  },
+  {
+    to: "/extracurricular-tracks",
+    icon: Users,
+    title: "Extracurricular Tracks",
+    description:
+      "Six career-field tracks with free national competitions, $0 portfolio blueprints, and virtual shadowing playbooks.",
+    meta: `${totalTracks} tracks`,
+  },
+  {
+    to: "/scholarship-finder",
+    icon: Award,
+    title: "Scholarship Finder",
+    description:
+      "Major national awards alongside no-essay, rolling-monthly money you can enter before the end of today.",
+    meta: `${totalScholarships}+ awards`,
+  },
+  {
+    to: "/outreach-lab",
+    icon: Mail,
+    title: "The Outreach Lab",
+    description:
+      "Copy-paste cold email templates for research labs, businesses, and nonprofits — plus a follow-up tracker matrix.",
+    meta: `${totalTemplates}+ templates`,
+  },
+];
 
-  const [isEssayModalOpen, setIsEssayModalOpen] = useState(false);
+// Pull just the dollar figure out of a longer award sentence, e.g.
+// "Up to $55,000 per year for 4 years (total up to $220,000)." -> "Up to $220,000"
+const extractAward = (text) => {
+  const matches = text.match(/\$[\d,]+(?:\s?(?:per year|\/year))?/gi);
+  if (matches) {
+    return matches[matches.length - 1]
+      .replace(/\s?(per year|\/year)/i, "")
+      // Trailing separators get swept up by the [\d,] class — "$25,000," —
+      // so trim any comma the number didn't actually need.
+      .replace(/[,.]+$/, "");
+  }
+  return "Full ride";
+};
 
-  // Dynamic college chances calculations
-  const calculateStanfordChance = () => {
-    const g = parseFloat(studentInfo.gpa) || 3.5;
-    const satBonus = studentInfo.targetSat.includes("1600") ? 4 : studentInfo.targetSat.includes("1550") ? 3 : 1;
-    const wBonus = checkedWeeks.length * 0.4;
-    const mBonus = checkedMilestones.length * 0.8;
-    return Math.min(25, Math.round(g * 2.5 + satBonus + wBonus + mBonus));
-  };
+const opportunityFeed = [
+  ...scholarships.map((s) => ({
+    name: s.name,
+    award: extractAward(s.award),
+    tag: "Major award",
+    url: s.url || searchLink(s.name),
+  })),
+  ...noEssayScholarships.map((s) => ({
+    name: s.name,
+    award: s.award,
+    tag: "No essay",
+    url: s.url || searchLink(s.name),
+  })),
+];
 
-  const calculateBerkeleyChance = () => {
-    const g = parseFloat(studentInfo.gpa) || 3.5;
-    const satBonus = studentInfo.targetSat.includes("1600") ? 8 : studentInfo.targetSat.includes("1550") ? 6 : 3;
-    const wBonus = checkedWeeks.length * 1.2;
-    const mBonus = checkedMilestones.length * 2.2;
-    return Math.min(68, Math.round(g * 8 + satBonus + wBonus + mBonus));
-  };
+const previewFeed = opportunityFeed.slice(0, 10);
 
-  const calculateMichiganChance = () => {
-    const g = parseFloat(studentInfo.gpa) || 3.5;
-    const satBonus = studentInfo.targetSat.includes("1600") ? 12 : studentInfo.targetSat.includes("1550") ? 10 : 4;
-    const wBonus = checkedWeeks.length * 2.0;
-    const mBonus = checkedMilestones.length * 3.0;
-    return Math.min(92, Math.round(g * 11 + satBonus + wBonus + mBonus));
-  };
+const principles = [
+  { k: "No account", v: "Nothing is gated. There is no sign-up wall anywhere on this site." },
+  { k: "No cost", v: "Every listed resource is free to use or $0 to enter. No affiliate links." },
+  { k: "No tracking", v: "We collect zero personal data, so there is nothing to opt out of." },
+  { k: "No vagueness", v: "Structured frameworks with dates and steps — not motivational advice." },
+];
 
-  const stanfordChance = calculateStanfordChance();
-  const berkeleyChance = calculateBerkeleyChance();
-  const michiganChance = calculateMichiganChance();
-
-  // Word count and progress for essay
-  const wordCount = essayOutline.text ? essayOutline.text.trim().split(/\s+/).filter(Boolean).length : 0;
-  const essayProgressPercent = Math.min(100, Math.round((wordCount / 650) * 100));
-
-  // Dynamic progress bar totals for homepage metrics
-  const apProgressPercent = Math.min(Math.round((checkedWeeks.length / 8) * 100), 100);
-  const satProgressPercent = Math.min(Math.round((checkedSatSteps.length / 7) * 100), 100);
-
-  const sections = [
-    {
-      to: "/academic-paths",
-      icon: BookOpen,
-      title: "Academic Paths",
-      description: "8-week AP/IB self-study bootcamps and a zero-dollar SAT 1500+ framework using only free resources.",
-      badge: "Academics",
-      bgClass: "bg-accent/10 text-accent border border-accent/20",
-    },
-    {
-      to: "/extracurricular-tracks",
-      icon: Users,
-      title: "Extracurricular Tracks",
-      description: "6 career-field tracks with free national competitions, $0 portfolio blueprints, and virtual shadowing playbooks.",
-      badge: "Extracurriculars",
-      bgClass: "bg-primary/10 text-primary border border-primary/20",
-    },
-    {
-      to: "/scholarship-finder",
-      icon: Award,
-      title: "Scholarship Finder",
-      description: "A curated table of major scholarships for ambitious scholars, plus a guide to finding hyper-local awards.",
-      badge: "Funding",
-      bgClass: "bg-emerald-600/10 text-emerald-700 border border-emerald-600/20",
-    },
-    {
-      to: "/outreach-lab",
-      icon: Mail,
-      title: "The Outreach Lab",
-      description: "Copy/paste cold email templates for research labs, businesses, and nonprofits — plus a tracker matrix.",
-      badge: "Outreach",
-      bgClass: "bg-amber-600/10 text-amber-700 border border-amber-600/20",
-    },
-  ];
-
-  const getInitials = (name) => {
-    if (!name) return "AK";
-    const parts = name.split(" ");
-    return parts.map((n) => n[0]).join("").toUpperCase().substring(0, 2);
-  };
-
-  const selectedPromptObj = essayPrompts.find((p) => p.id === essayOutline.prompt) || essayPrompts[0];
-
+/* A section header: eyebrow label, title, optional trailing action.
+   No icon. Icons beside section titles are a dashboard-template tic. */
+function SectionHead({ label, title, action }) {
   return (
-    <div className="space-y-10">
-      {/* Dashboard Top welcome */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-border/40">
-        <div>
-          <span className="text-xs font-bold tracking-wider text-accent uppercase">MAPS Workspace</span>
-          <h1 className="text-3xl sm:text-4xl font-serif font-extrabold tracking-tight text-primary mt-1">
-            Welcome back, <span className="font-serif italic text-accent">{studentInfo.name || "Scholar"}</span>
-          </h1>
-          <p className="text-sm text-foreground/75 mt-1">
-            Grade: <strong>{studentInfo.grade}</strong> · Target Major: <strong>{studentInfo.targetMajor}</strong> · SAT Goal: <strong>{studentInfo.targetSat}</strong>
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            to="/academic-paths"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-primary/10 transition-all duration-300 ease-in-out hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99]"
+    <Reveal className="flex items-end justify-between gap-6 mb-8">
+      <div>
+        <div className="type-label text-accent">{label}</div>
+        <h2 className="type-h2 mt-3 optical-left">{title}</h2>
+      </div>
+      {action}
+    </Reveal>
+  );
+}
+
+export default function Home() {
+  return (
+    <div>
+      {/* ── Hero ───────────────────────────────────────────────────────────
+          Asymmetric 7/5 split. The image is not decoration bolted on the
+          right — it carries the emotional argument the copy cannot. The
+          hero plays once on load (not on scroll — it's already in view),
+          staggered word-group by word-group so the page feels like it
+          switched on rather than just appeared. */}
+      <section className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        <div className="lg:col-span-7">
+          <motion.div
+            className="type-label text-accent"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            Go to Academics <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </div>
+            No sign-up · No paywall · Ever
+          </motion.div>
 
-      {/* Analytics & Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Metric 1: AP Study Progress */}
-        <div className="glass-card p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold tracking-wider text-foreground/50 uppercase">AP/IB Study Roadmap</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/10 text-accent">
-              <BookOpen className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-serif font-extrabold text-primary leading-none">
-              {checkedWeeks.length} / 8 Weeks
-            </h3>
-            <span className="text-[11px] font-semibold text-accent mt-1.5 block">
-              {apProgressPercent === 100 ? "Roadmap completed!" : `${apProgressPercent}% study milestones checked`}
-            </span>
-            
-            {/* Custom animated progress bar with glow */}
-            <div className="mt-4 w-full bg-muted/40 h-2 rounded-full overflow-hidden relative">
-              <div
-                style={{ width: `${apProgressPercent}%` }}
-                className="bg-accent h-full progress-glow rounded-full transition-all duration-500 relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-white/20 animate-pulse" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Metric 2: SAT Prep Progress */}
-        <div className="glass-card p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold tracking-wider text-foreground/50 uppercase">SAT Prep Stage</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <BookText className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-serif font-extrabold text-primary leading-none">
-              {checkedSatSteps.length} / 7 Stages
-            </h3>
-            <span className="text-[11px] font-semibold text-foreground/60 mt-1.5 block">
-              Target SAT: {studentInfo.targetSat} ({satProgressPercent}% setup completed)
-            </span>
-            
-            {/* Progress bar */}
-            <div className="mt-4 w-full bg-muted/40 h-2 rounded-full overflow-hidden">
-              <div
-                style={{ width: `${satProgressPercent}%` }}
-                className="bg-primary h-full rounded-full transition-all duration-500 relative"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Metric 3: EC Tracker */}
-        <div className="glass-card p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold tracking-wider text-foreground/50 uppercase">EC Milestones</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-600/10 text-amber-700">
-              <Users className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-serif font-extrabold text-primary leading-none">
-              {checkedMilestones.length} Active
-            </h3>
-            <span className="text-[11px] font-semibold text-amber-700 mt-1.5 block">
-              {checkedMilestones.length === 0 ? "No milestones checked yet" : `${checkedMilestones.length} items verified`}
-            </span>
-
-            {/* Progress bar */}
-            <div className="mt-4 w-full bg-muted/40 h-2 rounded-full overflow-hidden">
-              <div
-                style={{ width: `${Math.max(10, Math.min(100, checkedMilestones.length * 16))}%` }}
-                className="bg-amber-500 h-full rounded-full transition-all duration-500 relative"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Profile Settings Widget & Page Features split grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Workspace Customizer */}
-        <div className="space-y-6">
-          <div className="glass-card p-6 border border-white/40 shadow-xl shadow-indigo-950/5 h-fit space-y-6">
-            <div className="flex items-center gap-3 pb-3 border-b border-border/40">
-              <Settings2 className="h-5 w-5 text-accent" />
-              <div>
-                <h2 className="text-lg font-serif font-bold text-primary leading-none">Profile Setup</h2>
-                <span className="text-[9px] font-bold text-foreground/50 uppercase tracking-widest block mt-1">Workspace Sync</span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground/60">Your Name</label>
-                <input
-                  type="text"
-                  value={studentInfo.name}
-                  onChange={(e) => handleStudentInfoChange("name", e.target.value)}
-                  className="w-full rounded-xl border border-border bg-[#FAF7F2]/50 px-3.5 py-2 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
-                  placeholder="e.g. Alex Chen"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground/60">GPA (Unweighted)</label>
-                <input
-                  type="number"
-                  min="1.0"
-                  max="4.0"
-                  step="0.1"
-                  value={studentInfo.gpa}
-                  onChange={(e) => handleStudentInfoChange("gpa", e.target.value)}
-                  className="w-full rounded-xl border border-border bg-[#FAF7F2]/50 px-3.5 py-2 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground/60">Grade Level</label>
-                <select
-                  value={studentInfo.grade}
-                  onChange={(e) => handleStudentInfoChange("grade", e.target.value)}
-                  className="w-full rounded-xl border border-border bg-[#FAF7F2]/50 px-3.5 py-2 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
-                >
-                  <option value="Freshman">Freshman</option>
-                  <option value="Sophomore">Sophomore</option>
-                  <option value="Junior">Junior</option>
-                  <option value="Senior">Senior</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground/60">Target Major / Field</label>
-                <input
-                  type="text"
-                  value={studentInfo.targetMajor}
-                  onChange={(e) => handleStudentInfoChange("targetMajor", e.target.value)}
-                  className="w-full rounded-xl border border-border bg-[#FAF7F2]/50 px-3.5 py-2 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
-                  placeholder="e.g. Premed, Finance"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground/60">Target SAT Score</label>
-                <select
-                  value={studentInfo.targetSat}
-                  onChange={(e) => handleStudentInfoChange("targetSat", e.target.value)}
-                  className="w-full rounded-xl border border-border bg-[#FAF7F2]/50 px-3.5 py-2 text-sm text-foreground focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 ease-in-out"
-                >
-                  <option value="1600">1600 (Perfect)</option>
-                  <option value="1550">1550 (Ivy Plus)</option>
-                  <option value="1500">1500 (Top 20 Tier)</option>
-                  <option value="1400">1400 (Top 50 Tier)</option>
-                  <option value="Test-Optional">Test-Optional</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Chancing Meter */}
-          <div className="glass-card p-6 border border-white/40 shadow-xl shadow-indigo-950/5 space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-border/40">
-              <Sparkles className="h-5 w-5 text-accent" />
-              <h3 className="font-serif font-bold text-primary text-sm leading-none">Chancing Estimator</h3>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-1.5">
-                  <span className="text-[#1E1B4B]/80">Stanford University</span>
-                  <span className="text-pink-600">{stanfordChance}%</span>
-                </div>
-                <div className="w-full bg-[#FAF7F2] h-2 rounded-full overflow-hidden">
-                  <div style={{ width: `${stanfordChance}%` }} className="bg-pink-500 h-full rounded-full transition-all duration-550" />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-1.5">
-                  <span className="text-[#1E1B4B]/80">UC Berkeley</span>
-                  <span className="text-orange-600">{berkeleyChance}%</span>
-                </div>
-                <div className="w-full bg-[#FAF7F2] h-2 rounded-full overflow-hidden">
-                  <div style={{ width: `${berkeleyChance}%` }} className="bg-orange-500 h-full rounded-full transition-all duration-550" />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-1.5">
-                  <span className="text-[#1E1B4B]/80">University of Michigan</span>
-                  <span className="text-[#0F766E]">{michiganChance}%</span>
-                </div>
-                <div className="w-full bg-[#FAF7F2] h-2 rounded-full overflow-hidden">
-                  <div style={{ width: `${michiganChance}%` }} className="bg-[#0F766E] h-full rounded-full transition-all duration-550" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Saved Scholarships */}
-          <div className="glass-card p-6 border border-white/40 shadow-xl shadow-indigo-950/5 space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-border/40">
-              <Award className="h-5 w-5 text-accent" />
-              <h3 className="font-serif font-bold text-primary text-sm leading-none">Saved Scholarships</h3>
-            </div>
-            {trackedScholarships.length === 0 ? (
-              <p className="text-xs text-foreground/50 leading-relaxed">
-                No scholarships saved yet. Save them in the Scholarship Finder.
-              </p>
-            ) : (
-              <div className="divide-y divide-border/30">
-                {trackedScholarships.map((sName) => (
-                  <div key={sName} className="flex items-center justify-between py-2 text-xs">
-                    <span className="font-medium text-[#1E1B4B]">{sName}</span>
-                    <button
-                      onClick={() => toggleTrackScholarship(sName)}
-                      className="text-red-500 hover:text-red-700 font-semibold transition-colors"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Features Column */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between border-b border-border/40 pb-3">
-            <h2 className="text-lg font-serif font-bold text-primary flex items-center gap-2">
-              <Compass className="h-5 w-5 text-accent" />
-              Interactive Playbooks
-            </h2>
-            <span className="text-xs font-semibold text-foreground/50">Core Utilities</span>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2">
-            {sections.map((section, i) => (
-              <div
-                key={section.to}
-              >
-                <Link
-                  to={section.to}
-                  className="group flex h-full flex-col glass-card p-6.5 hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-300 border border-white/40 shadow-md shadow-indigo-950/2"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${section.bgClass}`}>
-                      <section.icon className="h-5 w-5" />
-                    </div>
-                    <span className="text-[9px] font-bold tracking-wider text-accent uppercase bg-accent/5 px-2 py-0.5 rounded border border-accent/10">
-                      {section.badge}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-serif font-bold text-primary">{section.title}</h3>
-                  <p className="mt-2 flex-1 text-xs text-foreground/75 leading-relaxed">{section.description}</p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:text-primary transition-colors duration-300">
-                    Open Playbook
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </Link>
-              </div>
-            ))}
-          </div>
-
-          {/* Common App Essay Outline Card */}
-          <div 
-            onClick={() => setIsEssayModalOpen(true)}
-            className="glass-card p-6 flex items-center justify-between gap-4 border border-white/40 shadow-md shadow-indigo-950/2 cursor-pointer hover:border-indigo-400 hover:shadow-lg transition-all duration-300"
+          <motion.h1
+            className="type-display mt-6 optical-left text-balance"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/50">
-                <BookText className="h-5.5 w-5.5" />
-              </div>
-              <div>
-                <h3 className="font-serif font-bold text-primary text-base leading-none">Common App Essay Workspace</h3>
-                <span className="text-[10px] text-foreground/50 block mt-1">Counselor outlines, prompt selectors, and live word counter</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-24 bg-[#FAF7F2] h-1.5 rounded-full overflow-hidden">
-                <div style={{ width: `${essayProgressPercent}%` }} className="bg-indigo-600 h-full rounded-full transition-all" />
-              </div>
-              <span className="text-xs font-bold text-indigo-600">{essayProgressPercent}%</span>
-            </div>
-          </div>
+            Every free admissions opportunity,{" "}
+            <span className="type-editorial">in one place.</span>
+          </motion.h1>
+
+          <motion.p
+            className="type-lead text-foreground/62 mt-7 max-w-[54ch]"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {totalScholarships}+ scholarships, self-study roadmaps, extracurricular tracks,
+            and outreach templates — fully open, nothing held behind an account.
+            Browse it like a catalog, not a dashboard.
+          </motion.p>
+
+          <motion.div
+            className="mt-9 flex flex-wrap items-center gap-3"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Link to="/scholarship-finder" className="btn-primary">
+              Browse {totalScholarships}+ scholarships
+              <ArrowRight className="h-4 w-4" strokeWidth={2} />
+            </Link>
+            <Link to="/academic-paths" className="btn-secondary">
+              Explore academic paths
+            </Link>
+          </motion.div>
+
+          <motion.p
+            className="type-small text-foreground/42 mt-7"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            Built for students without a $300/hour counselor.
+          </motion.p>
         </div>
 
-      </div>
-
-      {/* About Dashboard Widget */}
-      <section className="glass-card p-8 border border-white/40 shadow-xl shadow-indigo-950/5">
-        <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
-          <div>
-            <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Project Mission</span>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-primary mt-1">About the MAPS Initiative</h2>
-            <p className="mt-4 text-sm text-foreground/80 leading-relaxed">
-              College admissions shouldn't require a paid consultant. This hub exists to level the playing field by
-              giving every student free access to the same structural frameworks, templates, and curated resource lists
-              that expensive coaching services sell.
-            </p>
-            <p className="mt-4 text-sm text-foreground/80 leading-relaxed">
-              There are no accounts, no paywalls, and no 1-on-1 coaching. Everything here is self-serve: read the
-              guides, copy the templates, use the tables, and build your own path.
-            </p>
-          </div>
-          <div className="space-y-3.5">
-            {[
-              "No sign-up or account required",
-              "Every resource is free or $0",
-              "Collects zero personal data (privacy-compliant)",
-              "Copy/paste templates you can use today",
-              "Structured frameworks, not vague advice",
-              "Built specifically for independent scholars",
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-accent" />
-                <span className="text-sm text-foreground/80 font-semibold">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <motion.div
+          className="lg:col-span-5"
+          initial={{ opacity: 0, scale: 0.96, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <EditorialImage
+            src="/images/hero-desk.jpg"
+            alt="A student working through college applications at a kitchen table in late afternoon light."
+            ratio="4 / 5"
+            priority
+          />
+        </motion.div>
       </section>
 
-      {/* Common App Essay Workspace Dialog Modal */}
-      <Dialog open={isEssayModalOpen} onOpenChange={setIsEssayModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl border border-[#EAE3D8]">
-          <DialogHeader className="border-b border-border/40 pb-4">
-            <DialogTitle className="text-2xl font-serif font-bold text-[#1E1B4B] flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-accent animate-pulse" />
-              Common App Essay Workspace
-            </DialogTitle>
-            <DialogDescription className="text-xs text-foreground/60 mt-1">
-              Select your prompt, sketch your outline, and write your draft. Everything is saved automatically.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-6 md:grid-cols-3 pt-6">
-            {/* Left sidebar inside modal: prompts and details */}
-            <div className="space-y-4 md:border-r border-border/40 pr-0 md:pr-6 md:col-span-1">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-[#1E1B4B]/60 uppercase tracking-wider block">Select Prompt</label>
-                <select
-                  value={essayOutline.prompt}
-                  onChange={(e) => updateEssayOutline({ prompt: e.target.value })}
-                  className="w-full rounded-xl border border-border bg-[#FAF7F2]/50 px-3 py-2 text-xs text-foreground focus:border-primary/45 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                >
-                  {essayPrompts.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.id}. {p.title}
-                    </option>
-                  ))}
-                </select>
+      {/* ── Stat bar ───────────────────────────────────────────────────────
+          One panel with hairline dividers, not four floating cards. Four
+          bordered boxes in a row is the single most template-looking pattern
+          in dashboard design. */}
+      <section className="mt-20 lg:mt-28">
+        <Reveal className="panel grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border">
+          {stats.map((stat) => (
+            <div key={stat.label} className="px-6 py-7">
+              <div className="type-stat tnum">
+                <CountUp value={stat.value} />
               </div>
-
-              <div className="rounded-xl bg-[#FAF7F2] p-4 border border-[#EAE3D8]/50 space-y-2">
-                <div className="flex items-center gap-1 text-[10px] font-bold text-accent uppercase">
-                  <HelpCircle className="h-3.5 w-3.5" /> Prompt Guidelines
-                </div>
-                <p className="text-[11px] text-[#1E1B4B]/75 leading-relaxed">
-                  {selectedPromptObj.text}
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-[#FEF3C7] p-4 border border-[#FDE68A]/60">
-                <span className="text-[10px] font-bold text-[#92400E] uppercase block mb-1">Counselor Tip</span>
-                <p className="text-[11px] text-[#92400E] leading-relaxed">
-                  Make sure to highlight <strong>reflection</strong> rather than just narration. 70% of the essay should focus on what you learned or how you changed.
-                </p>
-              </div>
+              <div className="type-small text-foreground/50 mt-2">{stat.label}</div>
             </div>
+          ))}
+        </Reveal>
+      </section>
 
-            {/* Right side inside modal: textarea editor */}
-            <div className="md:col-span-2 flex flex-col space-y-4">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-[#1E1B4B]/70">Selected Prompt: {selectedPromptObj.title}</span>
-                <span className="text-foreground/50">{wordCount} / 650 words</span>
-              </div>
+      {/* ── Playbooks ──────────────────────────────────────────────────── */}
+      <section className="mt-20 lg:mt-28">
+        <SectionHead label="The library" title="Four playbooks, fully open" />
 
-              <textarea
-                value={essayOutline.text}
-                onChange={(e) => updateEssayOutline({ text: e.target.value })}
-                rows="14"
-                placeholder="Draft your essay or outline here..."
-                className="w-full flex-1 rounded-2xl border border-border bg-background p-4 text-sm text-[#1E1B4B] focus:border-primary/45 focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300 resize-none font-mono"
-              />
-
-              <div className="flex items-center justify-between text-xs border-t border-border/40 pt-3">
-                <span className="font-semibold text-[#1E1B4B]/60">Outline Progress:</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-32 bg-[#FAF7F2] h-2 rounded-full overflow-hidden">
-                    <div style={{ width: `${essayProgressPercent}%` }} className="bg-indigo-600 h-full rounded-full transition-all duration-300" />
+        <RevealGroup className="grid gap-4 sm:grid-cols-2">
+          {sections.map((section) => (
+            <RevealItem key={section.to}>
+              <Link to={section.to} className="group card p-7 flex h-full flex-col">
+                <div className="flex items-start justify-between">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground/70">
+                    <section.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
                   </div>
-                  <span className="font-bold text-indigo-600">{essayProgressPercent}%</span>
+                  <span className="type-small text-foreground/38 tnum">{section.meta}</span>
                 </div>
-              </div>
+
+                <h3 className="type-h3 mt-6">{section.title}</h3>
+                <p className="type-body text-foreground/58 mt-2.5 flex-1">{section.description}</p>
+
+                <span className="link-arrow text-foreground/70 group-hover:text-accent mt-6">
+                  Open playbook
+                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+                </span>
+              </Link>
+            </RevealItem>
+          ))}
+        </RevealGroup>
+      </section>
+
+      {/* ── Opportunity feed ───────────────────────────────────────────────
+          A catalog is a list, not a grid of cards. Rows separated by
+          hairlines scan far faster and read as a real database. */}
+      <section className="mt-20 lg:mt-28">
+        <SectionHead
+          label="Money"
+          title="Live opportunity feed"
+          action={
+            <Link to="/scholarship-finder" className="link-arrow text-accent">
+              All {totalScholarships}+ opportunities
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </Link>
+          }
+        />
+
+        <Reveal className="panel overflow-hidden">
+          {previewFeed.map((op, i) => (
+            <a
+              key={op.name}
+              href={op.url}
+              target="_blank"
+              rel="noreferrer"
+              className={`row group flex items-center gap-5 px-6 py-4 ${
+                i !== 0 ? "border-t border-border" : ""
+              }`}
+            >
+              <span className="type-small text-foreground/28 tnum w-6 flex-shrink-0">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+
+              <span className="type-h4 flex-1 min-w-0 truncate">{op.name}</span>
+
+              <span className="type-small text-foreground/45 hidden sm:block w-24 flex-shrink-0">
+                {op.tag}
+              </span>
+
+              <span className="type-small font-medium tnum text-right w-32 flex-shrink-0 whitespace-nowrap">
+                {op.award}
+              </span>
+
+              <ArrowUpRight
+                className="h-4 w-4 text-foreground/20 group-hover:text-accent flex-shrink-0 transition-colors"
+                strokeWidth={1.8}
+              />
+            </a>
+          ))}
+        </Reveal>
+      </section>
+
+      {/* ── Mission ────────────────────────────────────────────────────────
+          Inverted ink panel. One dark moment breaks a long white page and
+          gives the close real weight. */}
+      <section className="mt-20 lg:mt-28">
+        <Reveal className="panel-ink overflow-hidden grid lg:grid-cols-2" y={30}>
+          <div className="p-10 lg:p-14 flex flex-col justify-center">
+            <div className="type-label text-white/45">Why this exists</div>
+
+            <h2 className="type-h2 text-white mt-4 optical-left text-balance">
+              College admissions shouldn&rsquo;t require a{" "}
+              <span className="type-editorial">paid consultant.</span>
+            </h2>
+
+            <p className="type-body text-white/60 mt-6 max-w-[46ch]">
+              Expensive coaching services sell structure — deadlines, templates, curated
+              lists. None of it is secret. We publish the same structure, for free, to
+              everyone, permanently.
+            </p>
+
+            <dl className="mt-10 grid sm:grid-cols-2 gap-x-8 gap-y-6">
+              {principles.map((p) => (
+                <div key={p.k}>
+                  <dt className="type-h4 text-white">{p.k}</dt>
+                  <dd className="type-small text-white/50 mt-1.5">{p.v}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="mt-11">
+              <Link
+                to="/our-mission"
+                className="btn-secondary bg-white/[0.07] border-white/15 text-white hover:bg-white/[0.13]"
+              >
+                Read our mission
+                <ArrowRight className="h-4 w-4" strokeWidth={2} />
+              </Link>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <div className="relative min-h-[360px] lg:min-h-0">
+            <EditorialImage
+              src="/images/mission-hall.jpg"
+              alt="A student walking alone down a school corridor toward daylight at the end of the hall."
+              fill
+              scrim
+              position="center 38%"
+            />
+          </div>
+        </Reveal>
+      </section>
     </div>
   );
 }

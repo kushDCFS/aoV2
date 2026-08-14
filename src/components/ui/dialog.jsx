@@ -18,30 +18,36 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-foreground/30 backdrop-blur-[3px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:duration-150",
       className
     )}
     {...props} />
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
+/* No translate-based centering + independent enter/exit transforms — that
+   combination is what caused the shaking this codebase used to fight with
+   !important overrides. Flexbox centering on the portal removes the need for
+   any transform math on the content itself, so scale/opacity can animate
+   freely without fighting a translate. */
 const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className
-      )}
-      {...props}>
-      {children}
-      <DialogPrimitive.Close
-        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "pointer-events-auto grid w-full max-w-lg gap-5 rounded-2xl border border-border bg-card p-7 shadow-[var(--shadow-lg)] duration-200 [transition-timing-function:var(--ease-out)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-[0.97] data-[state=open]:zoom-in-[0.97] data-[state=closed]:duration-150",
+          className
+        )}
+        {...props}>
+        {children}
+        <DialogPrimitive.Close className="press absolute right-5 top-5 rounded-md p-1 text-foreground/40 hover:text-foreground hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:pointer-events-none">
+          <X className="h-4 w-4" strokeWidth={1.8} />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </div>
   </DialogPortal>
 ))
 DialogContent.displayName = DialogPrimitive.Content.displayName
@@ -69,7 +75,7 @@ DialogFooter.displayName = "DialogFooter"
 const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+    className={cn("type-h3", className)}
     {...props} />
 ))
 DialogTitle.displayName = DialogPrimitive.Title.displayName
@@ -77,7 +83,7 @@ DialogTitle.displayName = DialogPrimitive.Title.displayName
 const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("type-small text-foreground/58", className)}
     {...props} />
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName

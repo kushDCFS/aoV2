@@ -27,7 +27,7 @@ export default function TrackContent({ track }) {
             <Trophy className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-xl font-serif font-bold text-primary">Free National Competition</h3>
+            <h3 className="text-xl font-heading font-bold text-primary">Free National Competition</h3>
             <a
               href={track.competition.url}
               target="_blank"
@@ -49,7 +49,7 @@ export default function TrackContent({ track }) {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent border border-accent/20">
             <FolderKanban className="h-6 w-6" />
           </div>
-          <h3 className="text-xl font-serif font-bold text-primary">{track.portfolio.title}</h3>
+          <h3 className="text-xl font-heading font-bold text-primary">{track.portfolio.title}</h3>
         </div>
         <p className="text-sm text-foreground/75 leading-relaxed mb-6">{track.portfolio.description}</p>
         <StepList steps={track.portfolio.steps} />
@@ -61,7 +61,7 @@ export default function TrackContent({ track }) {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
             <Eye className="h-6 w-6" />
           </div>
-          <h3 className="text-xl font-serif font-bold text-primary">{track.shadowing.title}</h3>
+          <h3 className="text-xl font-heading font-bold text-primary">{track.shadowing.title}</h3>
         </div>
         <p className="text-sm text-foreground/75 leading-relaxed mb-6">{track.shadowing.description}</p>
         <StepList steps={track.shadowing.steps} />
@@ -74,7 +74,7 @@ export default function TrackContent({ track }) {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100/60 text-emerald-700 border border-emerald-200/55">
               <Heart className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-serif font-bold text-primary">{track.communityGiving.title}</h3>
+            <h3 className="text-xl font-heading font-bold text-primary">{track.communityGiving.title}</h3>
           </div>
           <p className="text-sm text-foreground/75 leading-relaxed mb-6">{track.communityGiving.description}</p>
           <StepList steps={track.communityGiving.steps} />
@@ -89,7 +89,7 @@ export default function TrackContent({ track }) {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100/60 text-orange-700 border border-orange-200/55">
               <Sun className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-serif font-bold text-primary">Free &amp; Low-Cost Summer Programs</h3>
+            <h3 className="text-xl font-heading font-bold text-primary">Free &amp; Low-Cost Summer Programs</h3>
           </div>
           <p className="text-sm text-foreground/75 leading-relaxed mb-6">
             Curated from{" "}
@@ -110,7 +110,7 @@ export default function TrackContent({ track }) {
                   href={program.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-serif font-bold text-primary hover:text-accent transition-colors duration-300 text-base sm:text-lg"
+                  className="inline-flex items-center gap-1.5 font-heading font-bold text-primary hover:text-accent transition-colors duration-300 text-base sm:text-lg"
                 >
                   {program.name}
                   <ExternalLink className="h-4 w-4 text-foreground/40" />

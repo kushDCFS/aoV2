@@ -4,130 +4,356 @@
 
 @layer base {
   :root {
-    --background: 38 27% 96%; /* Soft warm cream canvas (#FAF7F2) */
-    --foreground: 244 47% 15%; /* Deep navy/indigo for main text (#121132) */
-    --card: 38 30% 99%; /* Extremely soft off-white for cards (#FFFDFB) */
-    --card-foreground: 244 47% 15%;
+    --background: 0 0% 100%;
+    --foreground: 222 24% 10%;     /* Near-black ink (#12141B) */
+    --card: 0 0% 100%;
+    --card-foreground: 222 24% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 244 47% 15%;
-    --primary: 244 47% 20%; /* Deep indigo/navy header & primary CTA (#1E1B4B) */
+    --popover-foreground: 222 24% 10%;
+    --primary: 222 24% 10%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 45 100% 92%; /* Soft warm amber cream (#FEF3C7) */
-    --secondary-foreground: 38 92% 37%; /* Dark warm amber text (#B45309) */
-    --muted: 38 15% 91%; /* Muted warm gray */
-    --muted-foreground: 244 15% 45%;
-    --accent: 172 77% 26%; /* Soft premium teal (#0F766E) */
+    --secondary: 220 20% 97%;
+    --secondary-foreground: 222 24% 20%;
+    --muted: 220 18% 96.5%;
+    --muted-foreground: 222 10% 45%;
+    --accent: 243 75% 59%;         /* The single accent. Used sparingly. */
     --accent-foreground: 0 0% 100%;
-    --destructive: 350 80% 55%;
+    --destructive: 350 70% 47%;
     --destructive-foreground: 0 0% 100%;
-    --border: 38 22% 88%; /* Soft warm borders (#EAE3D8) */
-    --input: 38 22% 88%;
-    --ring: 244 47% 20%;
-    --radius: 1rem; /* 16px soft pill-like corners */
-    --font-heading: 'Playfair Display', 'DM Serif Display', Georgia, serif;
-    --font-body: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --border: 220 16% 91%;
+    --input: 220 16% 91%;
+    --ring: 243 75% 59%;
+    --radius: 0.5rem;
+    --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-editorial: 'Instrument Serif', Georgia, serif;
+
+    /* Hairline — the workhorse. Premium UI is borders, not blur. */
+    --line: 220 16% 91%;
+    --line-strong: 220 14% 85%;
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+    --shadow-xs: 0 1px 2px rgba(15, 15, 25, 0.04);
+    --shadow-sm: 0 1px 3px rgba(15, 15, 25, 0.06), 0 1px 2px rgba(15, 15, 25, 0.03);
+    --shadow-md: 0 4px 14px -3px rgba(15, 15, 25, 0.08), 0 2px 5px -2px rgba(15, 15, 25, 0.04);
+    --shadow-lg: 0 18px 36px -10px rgba(15, 15, 25, 0.13), 0 4px 10px -4px rgba(15, 15, 25, 0.05);
   }
 }
 
 @layer base {
   * {
-    @apply border-border/80 outline-ring/40;
+    @apply border-border outline-ring/40;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground font-body;
+    /* cv11 = single-storey a alternates off; ss01 = better punctuation.
+       tnum on numerics is applied per-element via .tnum, not globally. */
+    font-feature-settings: "cv11", "ss01";
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    @apply tracking-tight font-bold text-primary;
+    @apply text-foreground;
+  }
+
+  ::selection {
+    background: hsl(var(--accent) / 0.16);
   }
 }
 
-/* CollegeVine-style Soft Redesign Components */
+/* ---------------------------------------------------------------------------
+   TYPE SCALE
+   Ten deliberate steps. Tracking tightens as size grows — the single change
+   that separates "set in a UI kit" from "set by a designer". Nothing in the
+   app should invent its own font-size.
+   --------------------------------------------------------------------------- */
 @layer components {
-  /* Premium Glassmorphic Cards */
-  .glass-card {
-    background: rgba(255, 255, 255, 0.72) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    box-shadow: 0 10px 30px -10px rgba(30, 27, 75, 0.04), 0 1px 3px -1px rgba(30, 27, 75, 0.02) !important;
-    border-radius: 24px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  .type-display {
+    font-size: clamp(2.5rem, 1.6rem + 3.4vw, 4rem);   /* 40 → 64 */
+    line-height: 1.02;
+    letter-spacing: -0.038em;
+    font-weight: 620;
   }
 
-  .glass-card:hover {
-    background: rgba(255, 255, 255, 0.82) !important;
-    transform: scale(1.008) translateY(-2.5px) !important;
-    box-shadow: 0 20px 40px -15px rgba(30, 27, 75, 0.07), 0 2px 8px -2px rgba(30, 27, 75, 0.03) !important;
+  .type-h1 {
+    font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem); /* 30 → 40 */
+    line-height: 1.08;
+    letter-spacing: -0.032em;
+    font-weight: 620;
   }
 
-  /* Soft, Layered Cards */
-  .bg-white, .bg-card, [class*="bg-slate-50/50"], .rounded-2xl, [class*="rounded-2xl"], [class*="rounded-xl"], .rounded-3xl, [class*="rounded-3xl"] {
-    border: 1px solid rgba(234, 227, 216, 0.4) !important;
-    box-shadow: 0 6px 24px -4px rgba(30, 27, 75, 0.02), 0 2px 10px -2px rgba(30, 27, 75, 0.01) !important;
-    border-radius: 20px !important; /* Large, soft corners */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  .type-h2 {
+    font-size: 1.75rem;      /* 28 */
+    line-height: 1.14;
+    letter-spacing: -0.028em;
+    font-weight: 600;
   }
 
-  .rounded-3xl, [class*="rounded-3xl"] {
-    border-radius: 24px !important;
+  .type-h3 {
+    font-size: 1.1875rem;    /* 19 */
+    line-height: 1.3;
+    letter-spacing: -0.021em;
+    font-weight: 600;
   }
 
-  /* Only apply hover translation to interactive elements that explicitly hover */
-  .hover-lift:hover,
-  a.bg-white:hover, 
-  a.bg-card:hover,
-  a.rounded-2xl:hover,
-  a.rounded-xl:hover,
-  a.rounded-3xl:hover,
-  [class*="hover:shadow-lg"]:hover,
-  [class*="hover:border-slate-300"]:hover,
-  .group:hover .group-hover\:-translate-y-0\.5 {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 16px 36px -6px rgba(30, 27, 75, 0.06), 0 6px 16px -3px rgba(30, 27, 75, 0.03) !important;
+  .type-h4 {
+    font-size: 0.9375rem;    /* 15 */
+    line-height: 1.4;
+    letter-spacing: -0.012em;
+    font-weight: 600;
   }
 
-  /* Smooth Soft Buttons & Inputs */
-  button, .btn, [role="tab"], select, input, textarea {
-    border-radius: 12px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  .type-lead {
+    font-size: 1.0625rem;    /* 17 */
+    line-height: 1.62;
+    letter-spacing: -0.011em;
+    font-weight: 400;
   }
 
-  button:hover:not(:disabled), .btn:hover {
-    transform: scale(1.01) translateY(-1px) !important;
-    box-shadow: 0 8px 20px -3px rgba(30, 27, 75, 0.08) !important;
+  .type-body {
+    font-size: 0.9375rem;    /* 15 */
+    line-height: 1.6;
+    letter-spacing: -0.007em;
+    font-weight: 400;
   }
 
-  button:active:not(:disabled) {
-    transform: scale(0.99) translateY(0px) !important;
+  .type-small {
+    font-size: 0.84375rem;   /* 13.5 */
+    line-height: 1.55;
+    letter-spacing: -0.003em;
+    font-weight: 400;
   }
 
-  /* Soft Input Focus Styles */
+  /* The only place uppercase is allowed. Caps need MORE tracking and LESS
+     weight — the opposite of what most UIs do. */
+  .type-label {
+    font-size: 0.6875rem;    /* 11 */
+    line-height: 1;
+    letter-spacing: 0.085em;
+    font-weight: 560;
+    text-transform: uppercase;
+  }
+
+  .type-wordmark {
+    font-size: 0.9375rem;
+    line-height: 1;
+    letter-spacing: -0.017em;
+    font-weight: 640;
+  }
+
+  /* Big numerals: tabular so columns align, tight so they read as one unit. */
+  .type-stat {
+    font-size: 2.125rem;     /* 34 */
+    line-height: 1;
+    letter-spacing: -0.036em;
+    font-weight: 600;
+    font-feature-settings: "tnum", "cv11", "ss01";
+  }
+
+  .tnum { font-feature-settings: "tnum", "cv11", "ss01"; }
+
+  /* One editorial voice moment. Used once per page, never more. */
+  .type-editorial {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.018em;
+  }
+
+  /* Optical alignment: pulls a capital letter's left sidebearing flush to
+     the grid so headlines don't look indented next to body copy. */
+  .optical-left { margin-left: -0.045em; }
+}
+
+/* ---------------------------------------------------------------------------
+   SURFACES
+   Three tiers, and they must look different from each other. When every
+   container gets the same border + shadow, nothing has hierarchy.
+   --------------------------------------------------------------------------- */
+@layer components {
+  /* Tier 1 — a real, liftable card. */
+  .card {
+    @apply bg-card border rounded-xl;
+    border-color: hsl(var(--line));
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out),
+                transform 200ms var(--ease-out);
+  }
+
+  a.card:hover, button.card:hover, .card-interactive:hover {
+    box-shadow: var(--shadow-md);
+    border-color: hsl(var(--line-strong));
+    transform: translateY(-2px);
+  }
+
+  a.card:active, button.card:active { transform: translateY(-1px) scale(0.995); }
+
+  /* Tier 2 — a bounded region. Holds content, never lifts. */
+  .panel {
+    @apply bg-card border rounded-xl;
+    border-color: hsl(var(--line));
+  }
+
+  /* Tier 3 — an inverted statement block. Used once, for the close. */
+  .panel-ink {
+    background: hsl(var(--foreground));
+    color: rgba(255, 255, 255, 0.86);
+    @apply rounded-2xl;
+  }
+
+  /* A list row — the catalog primitive. Hairline separated, not boxed. */
+  .row {
+    transition: background-color 160ms var(--ease-out);
+  }
+  .row:hover { background-color: hsl(var(--muted) / 0.7); }
+
+  /* Data tables.
+     A solid dark header bar is the dated move — it shouts, and it fights every
+     card on the page. A hairline rule under quiet uppercase labels does the
+     same job with a fraction of the ink, and lets the data be the loudest
+     thing in the table. */
+  .data-table {
+    @apply w-full text-left border-collapse;
+  }
+
+  .data-table thead th {
+    padding: 0 1.25rem 0.75rem;
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.085em;
+    font-weight: 560;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.42);
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  .data-table thead tr {
+    border-bottom: 1px solid hsl(var(--line-strong));
+  }
+
+  .data-table tbody tr {
+    border-top: 1px solid hsl(var(--line));
+    transition: background-color 160ms var(--ease-out);
+  }
+  .data-table tbody tr:first-child { border-top: 0; }
+
+  .data-table td {
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    vertical-align: top;
+    color: hsl(var(--foreground) / 0.72);
+  }
+
+  /* First data column carries the row's identity — give it full ink. */
+  .data-table td:first-child {
+    color: hsl(var(--foreground));
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  @media (hover: hover) {
+    .data-table tbody tr:hover { background-color: hsl(var(--muted) / 0.65); }
+  }
+
+  /* ------------------------------------------------------------------- */
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 text-primary-foreground;
+    height: 2.75rem;
+    font-size: 0.875rem;
+    font-weight: 520;
+    letter-spacing: -0.009em;
+    box-shadow: var(--shadow-sm);
+    transition: transform 150ms var(--ease-out), opacity 150ms var(--ease-out),
+                box-shadow 150ms var(--ease-out);
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-card border px-5 text-foreground;
+    height: 2.75rem;
+    border-color: hsl(var(--line-strong));
+    font-size: 0.875rem;
+    font-weight: 520;
+    letter-spacing: -0.009em;
+    transition: transform 150ms var(--ease-out), background-color 150ms var(--ease-out),
+                border-color 150ms var(--ease-out);
+  }
+  .btn-secondary:hover { @apply bg-muted; }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  .press { transition: transform 150ms var(--ease-out); }
+  .press:active { transform: scale(0.97); }
+
+  /* Inline text link with an arrow that advances on hover. */
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5;
+    font-size: 0.84375rem;
+    font-weight: 520;
+    letter-spacing: -0.006em;
+    transition: color 160ms var(--ease-out);
+  }
+  .link-arrow svg {
+    transition: transform 200ms var(--ease-out);
+  }
+  .link-arrow:hover svg { transform: translateX(3px); }
+
+  input, textarea, select {
+    @apply rounded-lg border bg-card px-3 py-2;
+    border-color: hsl(var(--line-strong));
+    font-size: 0.9375rem;
+    transition: border-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+  }
   input:focus, textarea:focus, select:focus {
-    @apply ring-2 ring-primary/20 border-primary/45;
-    outline: none !important;
+    @apply outline-none;
+    border-color: hsl(var(--accent) / 0.55);
+    box-shadow: 0 0 0 3px hsl(var(--accent) / 0.11);
   }
 
-  /* Custom Tab Styling */
   [role="tab"][data-state="active"] {
-    @apply bg-primary text-white shadow-sm;
+    @apply bg-primary text-primary-foreground;
   }
 
-  /* Progress Glow and Shimmer Animations */
-  .progress-glow {
-    box-shadow: 0 0 10px 1px rgba(15, 118, 110, 0.3);
+  .nav-link {
+    transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out),
+                transform 140ms var(--ease-out);
+  }
+  .nav-link:active { transform: scale(0.98); }
+
+  /* Cascading entrance. Never from scale(0) — things fade up from near-place. */
+  .stagger-in {
+    animation: stagger-in-kf 420ms var(--ease-out) both;
   }
 
-  /* Prevent Radix Dialog shaking and position conflicts with global transitions & hovers */
-  [role="dialog"], 
-  [role="dialog"]:hover,
-  div[class*="DialogContent"], 
-  div[class*="DialogContent"]:hover,
-  div[class*="dialog-content"],
-  div[class*="dialog-content"]:hover {
-    transition: none !important;
-    transform: translate(-50%, -50%) !important;
+  @keyframes stagger-in-kf {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hover effects only where a real pointer exists. */
+  @media (hover: none) {
+    a.card:hover, button.card:hover, .card-interactive:hover {
+      transform: none;
+      box-shadow: var(--shadow-xs);
+    }
+    .row:hover { background-color: transparent; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stagger-in { animation: none; }
+    .press:active, .nav-link:active { transform: none !important; }
+    a.card:hover, .card-interactive:hover { transform: none; }
+    .link-arrow:hover svg { transform: none; }
   }
 }

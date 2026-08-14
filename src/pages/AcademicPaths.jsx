@@ -67,11 +67,11 @@ export default function AcademicPaths() {
 
       <div className="space-y-12">
         {/* Section 1: AP & IB Bootcamps */}
-        <section className="glass-card p-8 border border-white/40 shadow-xl shadow-indigo-950/5">
+        <section className="card p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
               <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Standardized Testing</span>
-              <h2 className="text-2xl font-serif font-bold text-primary mt-0.5">AP & IB Self-Study Bootcamps</h2>
+              <h2 className="text-2xl font-heading font-bold text-primary mt-0.5">AP & IB Self-Study Bootcamps</h2>
               <p className="mt-1 text-sm text-foreground/70 max-w-2xl leading-relaxed">
                 An 8-week structured study timeline. Check off each week as you complete it to sync your dashboard progress.
               </p>
@@ -85,13 +85,13 @@ export default function AcademicPaths() {
 
           {/* Table */}
           <div className="overflow-x-auto rounded-2xl border border-border/50 bg-white/40">
-            <table className="w-full text-left text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="bg-primary text-primary-foreground">
-                  <th className="px-5 py-4.5 font-semibold whitespace-nowrap">Week</th>
-                  <th className="px-5 py-4.5 font-semibold whitespace-nowrap">Phase</th>
-                  <th className="px-5 py-4.5 font-semibold">Key Actions</th>
-                  <th className="px-5 py-4.5 font-semibold">Free Resources</th>
+                <tr>
+                  <th className="px-5 font-semibold whitespace-nowrap">Week</th>
+                  <th className="px-5 font-semibold whitespace-nowrap">Phase</th>
+                  <th className="px-5 font-semibold">Key Actions</th>
+                  <th className="px-5 font-semibold">Free Resources</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -100,7 +100,7 @@ export default function AcademicPaths() {
                   const isChecked = checkedWeeks.includes(weekNum);
                   return (
                     <tr key={row.week} className={`transition-colors duration-300 ${isChecked ? "bg-accent/5 hover:bg-accent/10" : "hover:bg-white/60"}`}>
-                      <td className="px-5 py-4.5 font-bold whitespace-nowrap">
+                      <td className="px-5 font-bold whitespace-nowrap">
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input
                             type="checkbox"
@@ -111,9 +111,9 @@ export default function AcademicPaths() {
                           <span className={isChecked ? "text-accent line-through" : "text-foreground"}>Week {row.week}</span>
                         </label>
                       </td>
-                      <td className="px-5 py-4.5 font-serif font-bold text-primary whitespace-nowrap">{row.phase}</td>
-                      <td className="px-5 py-4.5 text-foreground/80 leading-relaxed">{row.actions}</td>
-                      <td className="px-5 py-4.5 text-foreground/80 leading-relaxed">{row.resources}</td>
+                      <td className="px-5 font-heading font-bold text-primary whitespace-nowrap">{row.phase}</td>
+                      <td className="px-5 text-foreground/80 leading-relaxed">{row.actions}</td>
+                      <td className="px-5 text-foreground/80 leading-relaxed">{row.resources}</td>
                     </tr>
                   );
                 })}
@@ -123,7 +123,7 @@ export default function AcademicPaths() {
 
           {/* Free Resources */}
           <div className="mt-12 pt-8 border-t border-border/40">
-            <h3 className="text-lg font-serif font-bold text-primary mb-6">Core Free Resources</h3>
+            <h3 className="text-lg font-heading font-bold text-primary mb-6">Core Free Resources</h3>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {freeResources.map((res) => (
                 <a
@@ -134,7 +134,7 @@ export default function AcademicPaths() {
                   className="group rounded-2xl border border-border/50 bg-white/50 p-6 transition-all duration-300 ease-in-out hover:bg-white hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-serif font-bold text-primary group-hover:text-accent transition-colors duration-300">{res.name}</h4>
+                    <h4 className="font-heading font-bold text-primary group-hover:text-accent transition-colors duration-300">{res.name}</h4>
                     <ExternalLink className="h-4 w-4 text-foreground/40 group-hover:text-accent transition-colors duration-300" />
                   </div>
                   <p className="text-xs text-foreground/75 leading-relaxed">{res.description}</p>
@@ -153,7 +153,7 @@ export default function AcademicPaths() {
               </div>
               <div>
                 <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Standardized Testing</span>
-                <h2 className="text-2xl font-serif font-bold text-primary">Zero-Dollar SAT 1500+ Framework</h2>
+                <h2 className="text-2xl font-heading font-bold text-primary">Zero-Dollar SAT 1500+ Framework</h2>
               </div>
             </div>
             <span className="text-xs font-semibold text-foreground/50">{checkedSatSteps.length} / 7 Completed</span>
@@ -166,7 +166,7 @@ export default function AcademicPaths() {
                 <div
                   key={i}
                   onClick={() => toggleSatStep(i)}
-                  className={`glass-card p-8 flex gap-5 hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-300 border border-white/40 shadow-md shadow-indigo-950/2 cursor-pointer ${
+                  className={`card p-8 flex gap-5 hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-300 border border-white/40 shadow-md shadow-indigo-950/2 cursor-pointer ${
                     isStepChecked ? "bg-accent/5 hover:bg-accent/10 border-accent/30" : ""
                   }`}
                 >
@@ -176,7 +176,7 @@ export default function AcademicPaths() {
                     {isStepChecked ? "✓" : i + 1}
                   </div>
                   <div>
-                    <h3 className="font-serif font-bold text-primary text-base mb-1.5 flex items-center gap-2">
+                    <h3 className="font-heading font-bold text-primary text-base mb-1.5 flex items-center gap-2">
                       {step.title}
                       {isStepChecked && <span className="text-xs text-accent font-semibold">(Completed)</span>}
                     </h3>
@@ -187,12 +187,12 @@ export default function AcademicPaths() {
             })}
           </div>
 
-          <div className="glass-card p-8 border border-white/40 shadow-xl shadow-indigo-950/5 relative overflow-hidden bg-gradient-to-r from-accent/5 to-transparent">
+          <div className="card p-8 relative overflow-hidden bg-gradient-to-r from-accent/5 to-transparent">
             <div className="flex items-start gap-4">
               <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-accent mt-0.5" />
               <div>
                 <span className="text-[10px] font-bold tracking-wider text-accent uppercase">Core Insight</span>
-                <h4 className="font-serif font-bold text-primary text-lg mt-0.5">Mistakes Journal Strategy</h4>
+                <h4 className="font-heading font-bold text-primary text-lg mt-0.5">Mistakes Journal Strategy</h4>
                 <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
                   The students who score 1500+ aren't smarter — they just review their mistakes more systematically. 
                   The mistakes journal is what separates a 1400 from a 1550. Every wrong answer is a free lesson 

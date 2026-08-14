@@ -1,21 +1,33 @@
 import React, { useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
-import { Compass, AlertTriangle, X, Menu, BookOpen, Users, Award, Mail, Globe, LogIn, LogOut } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { X, Menu, BookOpen, Users, Award, Mail, Globe, LayoutGrid } from "lucide-react";
+import { Mark, Logo } from "@/components/Brand";
 
-const navLinks = [
-  { to: "/", label: "Dashboard Home", icon: Compass, end: true },
-  { to: "/academic-paths", label: "Academic Paths", icon: BookOpen },
-  { to: "/extracurricular-tracks", label: "Extracurricular Tracks", icon: Users },
-  { to: "/scholarship-finder", label: "Scholarship Finder", icon: Award },
-  { to: "/outreach-lab", label: "The Outreach Lab", icon: Mail },
-  { to: "/our-mission", label: "Our Mission", icon: Globe },
+/* Grouped IA — a flat list of six links reads as a dump; three labelled groups
+   read as a considered information architecture. */
+const navGroups = [
+  {
+    label: null,
+    links: [{ to: "/", label: "Overview", icon: LayoutGrid, end: true }],
+  },
+  {
+    label: "Playbooks",
+    links: [
+      { to: "/academic-paths", label: "Academic Paths", icon: BookOpen },
+      { to: "/extracurricular-tracks", label: "Extracurricular Tracks", icon: Users },
+      { to: "/scholarship-finder", label: "Scholarship Finder", icon: Award },
+      { to: "/outreach-lab", label: "The Outreach Lab", icon: Mail },
+    ],
+  },
+  {
+    label: "About",
+    links: [{ to: "/our-mission", label: "Our Mission", icon: Globe }],
+  },
 ];
 
 export default function Layout() {
   const [bannerOpen, setBannerOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isAuthenticated, user, logout, navigateToLogin } = useAuth();
 
   // Shared personalized states
   const [studentInfo, setStudentInfo] = useState(() => ({
@@ -129,157 +141,144 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50/50 via-[#FAF7F2] to-white flex flex-col lg:flex-row text-[#1E1B4B]">
-      
-      {/* Mobile Top Bar */}
-      <header className="lg:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/60 bg-[#FAF7F2]/90 backdrop-blur-md px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Compass className="h-5 w-5 text-white" />
-          </div>
-          <span className="font-serif font-bold text-primary text-sm sm:text-base tracking-tight">MAPS Dashboard</span>
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row text-foreground">
+
+      {/* Mobile top bar */}
+      <header className="lg:hidden sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/90 backdrop-blur-md px-4 sm:px-5">
+        <Link to="/" onClick={() => setMobileOpen(false)} aria-label="MAPS home">
+          <Logo />
         </Link>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-lg p-2 text-foreground/75 hover:text-primary hover:bg-primary/5 transition-all duration-300"
+          className="press rounded-lg p-2 -mr-2 text-foreground/60 hover:text-foreground hover:bg-muted"
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </header>
 
-      {/* Sidebar Navigation */}
+      {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border/50 bg-[#FAF7F2]/90 backdrop-blur-lg transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[264px] flex-col border-r border-border bg-background transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{ transitionTimingFunction: "var(--ease-out)" }}
       >
-        {/* Sidebar Header */}
-        <div className="flex h-20 items-center justify-between px-6 border-b border-border/40">
-          <Link to="/" className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/10">
-              <Compass className="h-5.5 w-5.5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-serif font-bold text-primary leading-none text-base tracking-tight">MAPS Playbook</span>
-              <span className="text-[9px] font-semibold text-accent tracking-widest uppercase mt-0.5">Admissions Hub</span>
-            </div>
+        <div className="flex h-14 items-center justify-between px-5">
+          <Link to="/" onClick={() => setMobileOpen(false)} aria-label="MAPS home">
+            <Logo />
           </Link>
           <button
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden rounded-lg p-1.5 text-foreground/50 hover:bg-muted/40 transition-colors"
+            className="lg:hidden press rounded-md p-1.5 -mr-1.5 text-foreground/45 hover:bg-muted"
+            aria-label="Close menu"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Sidebar Navigation Links */}
-        <nav className="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-300 ease-in-out hover:scale-[1.01] hover:-translate-y-0.5 active:scale-[0.99] ${
-                  isActive
-                    ? "text-primary bg-white shadow-md shadow-indigo-950/5 border border-white/60"
-                    : "text-foreground/70 hover:text-primary hover:bg-white/50"
-                }`
-              }
-            >
-              <link.icon className="h-4.5 w-4.5 flex-shrink-0" />
-              {link.label}
-            </NavLink>
+        <nav className="flex-1 px-3 pb-4 overflow-y-auto">
+          {navGroups.map((group, gi) => (
+            <div key={group.label ?? "root"} className={gi === 0 ? "" : "mt-6"}>
+              {group.label && (
+                <div className="type-label text-foreground/38 px-3 pb-2">{group.label}</div>
+              )}
+              <div className="space-y-px">
+                {group.links.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    end={link.end}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `nav-link relative flex items-center gap-2.5 px-3 h-9 rounded-md ${
+                        isActive
+                          ? "text-foreground bg-muted font-medium"
+                          : "text-foreground/58 hover:text-foreground hover:bg-muted/60"
+                      }`
+                    }
+                    style={{ fontSize: "0.84375rem", letterSpacing: "-0.006em" }}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <link.icon
+                          className="h-4 w-4 flex-shrink-0"
+                          strokeWidth={isActive ? 2.1 : 1.8}
+                        />
+                        {link.label}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
-        {/* Sidebar Profile Setup */}
-        <div className="p-4 border-t border-border/40 space-y-2">
-          {isAuthenticated ? (
-            <div className="rounded-2xl bg-white border border-border/50 p-4 shadow-sm flex items-center justify-between gap-2">
-              <div className="truncate">
-                <span className="text-[9px] font-bold text-foreground/50 uppercase tracking-widest block">Active Profile</span>
-                <span className="text-xs font-semibold text-primary truncate block mt-0.5">{user?.name || studentInfo.name}</span>
-              </div>
-              <button
-                onClick={() => logout(true)}
-                className="rounded-lg p-1.5 text-foreground/50 hover:text-red-500 hover:bg-red-50 transition-all"
-                title="Sign out"
-              >
-                <LogOut className="h-4.5 w-4.5" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={navigateToLogin}
-              className="w-full rounded-2xl bg-white border border-border/50 p-4 shadow-sm flex items-center justify-between text-left hover:bg-primary/5 transition-all"
-            >
-              <div>
-                <span className="text-[9px] font-bold text-foreground/50 uppercase tracking-widest block">Guest Mode</span>
-                <span className="text-xs font-semibold text-primary block mt-0.5">Sign in to save</span>
-              </div>
-              <LogIn className="h-4.5 w-4.5 text-foreground/60" />
-            </button>
-          )}
-
-          <div className="rounded-2xl bg-secondary/30 p-4 border border-border/50">
-            <span className="text-[9px] font-bold text-secondary-foreground uppercase tracking-widest block">Access Status</span>
-            <span className="text-xs font-semibold text-primary mt-1 block">100% Free · Public Tier</span>
+        <div className="p-3">
+          <div className="rounded-lg bg-muted/70 px-3.5 py-3">
+            <div className="type-label text-foreground/45">Open access</div>
+            <p className="type-small text-foreground/62 mt-1.5 leading-snug">
+              No account, no paywall, no data collected.
+            </p>
           </div>
         </div>
       </aside>
 
-      {/* Main Content Pane */}
+      {/* Main pane */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Banner container */}
+        {/* Disclaimer — legally required, visually quiet. A yellow alert bar
+            shouts; a hairline strip informs. */}
         {bannerOpen && (
-          <div className="bg-secondary/40 border-b border-border/50 transition-all duration-300">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between gap-3 py-3">
-                <p className="flex items-start gap-2 text-xs sm:text-sm text-secondary-foreground leading-relaxed">
-                  <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                  <span><strong>Disclaimer:</strong> This platform is a 100% free, self-service tool repository. We provide independent structural frameworks; we do not offer 1-on-1 coaching or advisory.</span>
+          <div className="border-b border-border bg-muted/45">
+            <div className="mx-auto max-w-[1100px] px-6 sm:px-8 lg:px-12">
+              <div className="flex items-center justify-between gap-4 py-2.5">
+                <p className="type-small text-foreground/58">
+                  <span className="text-foreground/80 font-medium">Self-service tool repository.</span>{" "}
+                  We publish independent structural frameworks — not 1-on-1 coaching or advisory.
                 </p>
                 <button
                   onClick={() => setBannerOpen(false)}
-                  className="flex-shrink-0 rounded-lg p-1 text-secondary-foreground/80 hover:bg-secondary-foreground/10 transition-colors"
+                  className="press flex-shrink-0 rounded-md p-1 text-foreground/35 hover:text-foreground/70 hover:bg-foreground/5"
+                  aria-label="Dismiss"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Content viewport */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mx-auto max-w-7xl">
+        {/* Content viewport — 1100px measure. 1280 is too wide for reading;
+            cards stretch and text lines run long. */}
+        <main className="flex-1 px-6 sm:px-8 lg:px-12 py-14 lg:py-20">
+          <div className="mx-auto max-w-[1100px]">
             <Outlet context={{ studentInfo, handleStudentInfoChange, checkedWeeks, toggleWeek, checkedSatSteps, toggleSatStep, checkedMilestones, toggleMilestone, trackedScholarships, toggleTrackScholarship, essayOutline, updateEssayOutline }} />
           </div>
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-border/40 bg-[#FAF7F2]/40 py-8 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-                <Compass className="h-4 w-4 text-white" />
+        <footer className="border-t border-border px-6 sm:px-8 lg:px-12 py-10">
+          <div className="mx-auto max-w-[1100px] flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-2.5">
+              <Mark className="h-5 w-5 text-foreground" />
+              <div>
+                <div className="type-h4">Movement for Admissions Pathways &amp; Success</div>
+                <div className="type-small text-foreground/50 mt-0.5">
+                  Democratizing college admissions knowledge.
+                </div>
               </div>
-              <span className="font-serif font-bold text-primary text-sm">Movement for Admissions Pathways and Success</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Democratizing college admissions knowledge. All playbooks are free.
+            <p className="type-small text-foreground/45">
+              Every playbook is free. © {new Date().getFullYear()} MAPS.
             </p>
           </div>
         </footer>
       </div>
 
-      {/* Mobile Drawer Overlay */}
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-40 bg-slate-950/20 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-foreground/25 backdrop-blur-[2px] lg:hidden"
         />
       )}
     </div>

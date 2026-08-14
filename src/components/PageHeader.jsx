@@ -1,19 +1,21 @@
 import React from "react";
 
-export default function PageHeader({ title, subtitle, icon: Icon }) {
+/**
+ * Page header.
+ *
+ * The `icon` prop is accepted and deliberately ignored: an icon tile beside a
+ * page title is a dashboard-template tic, and it competes with the one thing
+ * the header exists to do. Callers keep passing it; the design drops it.
+ * An eyebrow label carries the same wayfinding signal for a fraction of the ink.
+ */
+export default function PageHeader({ title, subtitle, eyebrow }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 mb-8 border-b border-border/40">
-      <div className="flex items-center gap-4">
-        {Icon && (
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-border/60 text-primary shadow-sm shadow-indigo-950/5">
-            <Icon className="h-5.5 w-5.5" />
-          </div>
-        )}
-        <div>
-          <h1 className="text-3xl font-serif font-extrabold tracking-tight text-primary leading-none">{title}</h1>
-          {subtitle && <p className="text-sm text-foreground/70 mt-2 max-w-2xl leading-relaxed">{subtitle}</p>}
-        </div>
-      </div>
-    </div>
+    <header className="mb-14">
+      {eyebrow && <div className="type-label text-accent mb-3">{eyebrow}</div>}
+      <h1 className="type-h1 optical-left text-balance">{title}</h1>
+      {subtitle && (
+        <p className="type-lead text-foreground/58 mt-4 max-w-[62ch]">{subtitle}</p>
+      )}
+    </header>
   );
 }

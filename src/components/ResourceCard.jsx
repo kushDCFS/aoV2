@@ -45,7 +45,7 @@ export default function ResourceCard({ resource, index = 0 }) {
         </span>
       </div>
 
-      <h3 className="font-serif text-base font-semibold leading-snug text-primary group-hover:text-accent transition-colors">
+      <h3 className="font-heading text-base font-semibold leading-snug text-primary group-hover:text-accent transition-colors">
         {resource.title}
       </h3>
 

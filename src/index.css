@@ -254,6 +254,34 @@
     color: hsl(var(--foreground) / 0.72);
   }
 
+  /* Table caption — names the table for screen-reader users. Visually it sits
+     as a quiet line above the header rule, in the same register as .type-small,
+     so it reads as part of the table rather than a heading competing with the
+     section title above it. */
+  .data-table caption {
+    caption-side: top;
+    text-align: left;
+    padding: 0 1.25rem 0.875rem;
+    font-size: 0.84375rem;
+    line-height: 1.55;
+    letter-spacing: -0.003em;
+    color: hsl(var(--foreground) / 0.5);
+  }
+
+  /* Row headers: the first cell of a body row carries the row's identity, so
+     when it is a <th scope="row"> it must look like data, not like a column
+     label. Inherit the td treatment rather than the thead treatment. */
+  .data-table tbody th {
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    vertical-align: top;
+    text-align: left;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+  }
+
   /* First data column carries the row's identity — give it full ink. */
   .data-table td:first-child {
     color: hsl(var(--foreground));
@@ -355,5 +383,366 @@
     .press:active, .nav-link:active { transform: none !important; }
     a.card:hover, .card-interactive:hover { transform: none; }
     .link-arrow:hover svg { transform: none; }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   FOCUS
+   One ring, built from --ring, applied to everything a keyboard can reach.
+   :focus-visible only, so a mouse click never paints a ring — but a Tab key
+   always does. This lives in the components layer deliberately: several
+   component rules below/above set `outline: none`, and a base-layer rule
+   would lose to them.
+   --------------------------------------------------------------------------- */
+@layer components {
+  :where(
+    a[href], area[href], button, input, select, textarea, summary,
+    [tabindex]:not([tabindex="-1"]), [role="tab"], [role="button"],
+    [contenteditable="true"]
+  ):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    /* The ring must survive on the ink panel and on the inverted active tab,
+       where a 2px indigo line alone is low-contrast against near-black. */
+    box-shadow: 0 0 0 4px hsl(var(--background) / 0.9);
+  }
+
+  /* Inputs already carry a border-colour + soft ring on :focus. Keep that as
+     the resting affordance, and add the hard ring for keyboard focus so the
+     indicator is unambiguous rather than a 3px 11%-opacity glow. */
+  input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 1px;
+    box-shadow: none;
+  }
+
+  /* Skip-to-content. Off-canvas until focused — never display:none, which
+     would take it out of the tab order and defeat the point. */
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 100;
+    transform: translateY(calc(-100% - 1.5rem));
+    transition: transform 180ms var(--ease-out);
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+
+  /* A horizontally scrolling region is only reachable by keyboard if it is
+     focusable. `tabindex="0"` on the wrapper does that; this gives the focus
+     it receives a visible edge that reads as "this box scrolls". */
+  .scroll-region:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skip-link { transition: none; }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   CATEGORY ACCENTS + CONTROL PANEL   [added for the homepage control panel]
+
+   New block. Nothing above this line was modified.
+
+   --accent stays the single primary accent for the site; Academic Paths, the
+   first playbook, simply *is* that accent. The other three playbooks get one
+   hue each so a student can learn "teal = tracks" over a few visits. These are
+   category coding, not decoration: every place a category colour appears it is
+   paired with a text label and a distinct badge geometry, so the colour is
+   never the only thing carrying the meaning.
+
+   Every value below measures at least 5.8:1 against white, so category text
+   passes AA at body size — not just as a decorative fill.
+   --------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --cat-academic: 243 75% 59%;   /* = --accent. Academic Paths */
+    --cat-tracks:   176 70% 26%;   /* Extracurricular Tracks     */
+    --cat-money:     27 92% 33%;   /* Scholarship Finder         */
+    --cat-outreach: 322 62% 38%;   /* The Outreach Lab           */
+
+    /* The page field the panel's cards float on. A tint this quiet reads as
+       "a different surface" without becoming a colour statement. */
+    --field: 233 54% 97%;
+    --field-line: 233 34% 90%;
+  }
+}
+
+@layer components {
+  /* The panel's field: a full-bleed tinted band that the white cards sit on.
+     Pulled out to the viewport edges by the caller's negative margins. */
+  /* The hero band inside the white pane. Deliberately NOT the periwinkle of
+     the outer page ground — the window already sits on that, and repeating it
+     here flattens the card stack into one muddy field. */
+  .panel-field {
+    background:
+      radial-gradient(120% 78% at 82% -8%, hsl(var(--c-academic) / 0.10) 0%, transparent 62%),
+      hsl(var(--panel));
+    border-bottom: 1px solid hsl(var(--field-line));
+  }
+
+  /* A floating card on the field. Larger radius than .card on purpose — the
+     panel reads as a distinct, friendlier surface from the catalog below it. */
+  .field-card {
+    @apply bg-card rounded-2xl;
+    border: 1px solid hsl(var(--field-line));
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* A route segment: the progress bar redrawn as a stretch of plotted path.
+     The track carries a faint dotted rule — the surveyed-but-not-yet-walked
+     line from the brand's route mark — and the fill covers it over. */
+  .route-track {
+    position: relative;
+    height: 10px;
+    border-radius: 999px;
+    background: hsl(var(--muted));
+    overflow: hidden;
+  }
+
+  .route-track::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 3px 50%, hsl(var(--foreground) / 0.22) 1px, transparent 1.2px);
+    background-size: 8px 100%;
+  }
+
+  .route-fill {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    border-radius: 999px;
+    background: hsl(var(--seg, var(--accent)));
+    transition: width 620ms var(--ease-out);
+  }
+
+  /* A completed segment gets a rounded cap at its head — the waypoint dot
+     that terminates a plotted leg. Shape, not just colour. */
+  .route-fill[data-complete="true"] {
+    box-shadow: 0 0 0 2px hsl(var(--card)), 0 0 0 4px hsl(var(--seg, var(--accent)) / 0.28);
+  }
+
+  /* The waypoint rail: the dark spine the deadline cards notch out of. */
+  .waypoint-rail {
+    background: hsl(var(--foreground));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .route-fill { transition: none; }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   DASHBOARD SHELL — "control panel" theme
+   ---------------------------------------------------------------------------
+   The app sits as a rounded window floating on a soft periwinkle field, with a
+   dark rail down the left. Friendly, high-radius, multi-accent — deliberately
+   warmer than the editorial pages deeper in the site. Category colour is always
+   paired with a label or a shape; colour never carries meaning alone.
+   --------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --field:        221 90% 84%;   /* periwinkle page ground   */
+    --field-deep:   224 76% 74%;   /* lower gradient stop      */
+    --rail:         206 56% 14%;   /* dark navy nav rail       */
+    --rail-soft:    206 40% 22%;
+    --panel:        225 100% 98%;  /* right-hand column ground */
+    --window:       0 0% 100%;
+
+    /* Category accents. One per playbook, plus a neutral. */
+    --c-academic:   249 84% 68%;   /* lavender */
+    --c-extra:      157 66% 52%;   /* mint     */
+    --c-money:      43 100% 61%;   /* yellow   */
+    --c-outreach:   339 82% 76%;   /* pink     */
+    --c-sky:        212 92% 63%;   /* blue     */
+
+    /* Text-safe variants. The pastels above are surface colours — several of
+       them (yellow especially) fall under 2:1 on white, so anything that sets
+       *type* uses these instead. Same hue, enough luminance to clear AA. */
+    --c-academic-ink: 249 62% 52%;
+    --c-extra-ink:    162 82% 27%;
+    --c-money-ink:    32 88% 33%;
+    --c-outreach-ink: 339 62% 42%;
+    --c-sky-ink:      212 84% 42%;
+
+    /* The catalog carries seven fields, two more than the four playbooks this
+       palette was originally cut for. Rather than double up a hue and make two
+       unrelated categories look related, the family gains two members built
+       the same way: a pastel surface plus a text-safe ink of the same hue.
+       Both inks clear AA on white at body size. */
+    --c-teal:         187 62% 55%;
+    --c-teal-ink:     189 85% 26%;
+    --c-plum:         285 62% 74%;
+    --c-plum-ink:     285 50% 45%;
+
+    --r-window: 30px;
+    --r-card:   22px;
+    --r-tile:   16px;
+
+    --shadow-window: 0 32px 64px -22px rgba(23, 38, 82, 0.30), 0 8px 22px -12px rgba(23, 38, 82, 0.16);
+    --shadow-card:   0 2px 5px rgba(28, 44, 92, 0.05);
+    --shadow-lift:   0 14px 30px -12px rgba(28, 44, 92, 0.20);
+  }
+}
+
+@layer components {
+  .field-bg {
+    background:
+      radial-gradient(120% 90% at 15% 0%, hsl(var(--field) / 0.95) 0%, transparent 60%),
+      linear-gradient(160deg, hsl(var(--field)) 0%, hsl(var(--field-deep)) 100%);
+  }
+
+  .app-window {
+    background: hsl(var(--window));
+    border-radius: var(--r-window);
+    box-shadow: var(--shadow-window);
+  }
+
+  .dash-card {
+    background: hsl(var(--window));
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* The interior-page card.
+     Same geometry as .dash-card, so a playbook page reads as the same product
+     as the control panel. It keeps a hairline because .dash-card does not: on
+     the homepage those cards float on a tinted field that separates them from
+     the ground, and inside the white pane there is no such field — a white
+     card with only --shadow-card behind it disappears. The line is drawn from
+     --field-line rather than --line so it stays in the periwinkle family the
+     shell established. */
+  .page-card {
+    background: hsl(var(--window));
+    border: 1px solid hsl(var(--field-line));
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* A tinted icon tile. The control panel pairs every category colour with a
+     label; these tiles inherit that contract from their caller. */
+  .icon-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 14px;
+    background: hsl(var(--tone, var(--muted)) / 0.18);
+    color: hsl(var(--tone-ink, var(--foreground) / 0.7));
+  }
+
+  .dash-tile {
+    border-radius: var(--r-tile);
+    transition: transform 260ms var(--ease-out), box-shadow 260ms var(--ease-out);
+  }
+
+  .dash-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* The active rail item notches out of the dark rail into the white pane —
+     the concave corners are two radial gradients, no extra markup. */
+  .rail-active {
+    background: hsl(var(--window));
+    color: hsl(var(--foreground));
+    border-top-left-radius: var(--r-tile);
+    border-bottom-left-radius: var(--r-tile);
+  }
+
+  .rail-notch::before,
+  .rail-notch::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    background: hsl(var(--window));
+    pointer-events: none;
+  }
+  .rail-notch::before {
+    top: -16px;
+    -webkit-mask: radial-gradient(circle 16px at 0 0, transparent 0 16px, #000 17px);
+            mask: radial-gradient(circle 16px at 0 0, transparent 0 16px, #000 17px);
+  }
+  .rail-notch::after {
+    bottom: -16px;
+    -webkit-mask: radial-gradient(circle 16px at 0 100%, transparent 0 16px, #000 17px);
+            mask: radial-gradient(circle 16px at 0 100%, transparent 0 16px, #000 17px);
+  }
+
+  /* Slim pill meter used by the progress rows. */
+  .meter {
+    height: 8px;
+    border-radius: 999px;
+    background: hsl(220 30% 92%);
+    overflow: hidden;
+  }
+  .meter > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: hsl(var(--tone, var(--accent)));
+    transition: width 640ms var(--ease-out);
+  }
+
+  /* Rounded track + fill for the weekly bar chart. */
+  .bar-track {
+    width: 11px;
+    border-radius: 999px;
+    background: hsl(220 28% 93%);
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 999px;
+    background: hsl(var(--tone, var(--accent)));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .meter > span { transition: none; }
+    .dash-tile { transition: none; }
+    .dash-tile:hover { transform: none; }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   SEARCH HERO — sky gradient, search-first landing band
+   ---------------------------------------------------------------------------
+   Used once, at the top of the Summer Programs catalog. A blue-sky gradient
+   with a soft cloud-like glow reframes "search a database" as something
+   closer to "look something up," which is the register a free public tool
+   should have — warmer than the ink-panel dashboard register used elsewhere.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .hero-sky {
+    background:
+      radial-gradient(120% 140% at 50% -20%, hsl(var(--c-sky) / 0.16) 0%, transparent 60%),
+      linear-gradient(180deg, hsl(var(--c-sky) / 0.10) 0%, hsl(var(--panel)) 65%, hsl(0 0% 100%) 100%);
+  }
+
+  .hero-search {
+    height: 3.25rem;
+    border-radius: 999px;
+    border: 1px solid hsl(220 30% 88%);
+    background: hsl(0 0% 100%);
+    box-shadow: 0 14px 34px -14px hsl(var(--c-sky-ink) / 0.28), var(--shadow-sm);
+    transition: box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out);
+  }
+  .hero-search:focus-within {
+    border-color: hsl(var(--c-sky) / 0.7);
+    box-shadow: 0 16px 38px -14px hsl(var(--c-sky-ink) / 0.32), 0 0 0 3px hsl(var(--c-sky) / 0.22);
   }
 }

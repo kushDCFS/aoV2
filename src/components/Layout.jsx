@@ -1,44 +1,117 @@
-import React, { useState } from "react";
-import { Outlet, NavLink, Link } from "react-router-dom";
-import { X, Menu, BookOpen, Users, Award, Mail, Globe, LayoutGrid } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
+import { X, Menu, BookOpen, Users, Award, Mail, Globe, LayoutGrid, Sun } from "lucide-react";
 import { Mark, Logo } from "@/components/Brand";
 
-/* Grouped IA — a flat list of six links reads as a dump; three labelled groups
-   read as a considered information architecture. */
-const navGroups = [
-  {
-    label: null,
-    links: [{ to: "/", label: "Overview", icon: LayoutGrid, end: true }],
-  },
-  {
-    label: "Playbooks",
-    links: [
-      { to: "/academic-paths", label: "Academic Paths", icon: BookOpen },
-      { to: "/extracurricular-tracks", label: "Extracurricular Tracks", icon: Users },
-      { to: "/scholarship-finder", label: "Scholarship Finder", icon: Award },
-      { to: "/outreach-lab", label: "The Outreach Lab", icon: Mail },
-    ],
-  },
-  {
-    label: "About",
-    links: [{ to: "/our-mission", label: "Our Mission", icon: Globe }],
-  },
+/* The disclaimer is legally load-bearing: it states we publish frameworks and
+   do not sell 1-on-1 coaching or personalised advisory. It must always be
+   reachable — so the full sentence lives permanently in the footer, and the
+   banner is only the *notice* of it. That is what makes it safe to let a
+   student dismiss the banner once and never see it again. */
+const DISCLAIMER_DISMISSED_KEY = "maps_disclaimer_dismissed_v1";
+
+/* A horizontal bar is a flat row — the rail's three labelled groups do not
+   survive the rotation, so the IA is carried by order instead: overview, the
+   four playbooks, then about. */
+const navLinks = [
+  { to: "/", label: "Overview", icon: LayoutGrid, end: true },
+  { to: "/academic-paths", label: "Academic", icon: BookOpen },
+  { to: "/extracurricular-tracks", label: "Activities", icon: Users },
+  { to: "/summer-programs", label: "Summer Programs", icon: Sun },
+  { to: "/scholarship-finder", label: "Scholarships", icon: Award },
+  { to: "/outreach-lab", label: "Outreach", icon: Mail },
+  { to: "/our-mission", label: "Mission", icon: Globe },
 ];
 
 export default function Layout() {
-  const [bannerOpen, setBannerOpen] = useState(true);
+  const [bannerOpen, setBannerOpen] = useState(() => {
+    try {
+      return localStorage.getItem(DISCLAIMER_DISMISSED_KEY) !== "1";
+    } catch {
+      return true;
+    }
+  });
+  const [bannerExpanded, setBannerExpanded] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const dismissBanner = () => {
+    setBannerOpen(false);
+    try {
+      localStorage.setItem(DISCLAIMER_DISMISSED_KEY, "1");
+    } catch {
+      /* Private browsing / storage disabled — the banner simply returns next
+         visit, which is the safe direction to fail in. */
+    }
+  };
+
+  const location = useLocation();
+  const sidebarRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const mainRef = useRef(null);
+  const closeMenu = useCallback(() => setMobileOpen(false), []);
+
+  /* Route change closes the drawer. Without this, following a link on mobile
+     leaves an open overlay covering the page you just navigated to. */
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  /* Drawer keyboard contract: focus moves in on open, Escape closes, Tab is
+     trapped inside while it is open, and focus returns to the button that
+     opened it. Without the last step a keyboard user is dumped at the top of
+     the document every time they close the menu. */
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const node = sidebarRef.current;
+    if (!node) return;
+
+    const SELECTOR =
+      'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusables = () =>
+      Array.from(node.querySelectorAll(SELECTOR)).filter((el) => el.offsetParent !== null);
+
+    focusables()[0]?.focus();
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (!node.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      menuButtonRef.current?.focus();
+    };
+  }, [mobileOpen]);
 
   // Shared personalized states
   const [studentInfo, setStudentInfo] = useState(() => ({
-    name: localStorage.getItem("outreach_student_name") || "Anika Kapoor",
-    email: localStorage.getItem("outreach_student_email") || "anika@gmail.com",
-    grade: localStorage.getItem("outreach_student_grade") || "Junior",
-    highSchool: localStorage.getItem("outreach_student_highSchool") || "Oakridge High",
-    skills: localStorage.getItem("outreach_student_skills") || "Python, data analysis, literature reviews",
-    targetSat: localStorage.getItem("maps_student_targetSat") || "1500",
-    targetMajor: localStorage.getItem("maps_student_targetMajor") || "Computer Science",
-    gpa: localStorage.getItem("maps_student_gpa") || "3.9",
+    name: localStorage.getItem("outreach_student_name") || "",
+    email: localStorage.getItem("outreach_student_email") || "",
+    grade: localStorage.getItem("outreach_student_grade") || "",
+    highSchool: localStorage.getItem("outreach_student_highSchool") || "",
+    skills: localStorage.getItem("outreach_student_skills") || "",
+    targetSat: localStorage.getItem("maps_student_targetSat") || "",
+    targetMajor: localStorage.getItem("maps_student_targetMajor") || "",
+    gpa: localStorage.getItem("maps_student_gpa") || "",
   }));
 
   const handleStudentInfoChange = (key, value) => {
@@ -141,146 +214,157 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row text-foreground">
-
-      {/* Mobile top bar */}
-      <header className="lg:hidden sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/90 backdrop-blur-md px-4 sm:px-5">
-        <Link to="/" onClick={() => setMobileOpen(false)} aria-label="MAPS home">
-          <Logo />
-        </Link>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="press rounded-lg p-2 -mr-2 text-foreground/60 hover:text-foreground hover:bg-muted"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </header>
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[264px] flex-col border-r border-border bg-background transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-        style={{ transitionTimingFunction: "var(--ease-out)" }}
+    <div className="min-h-screen bg-white text-foreground">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-foreground focus:px-4 focus:py-2 focus:text-white"
       >
-        <div className="flex h-14 items-center justify-between px-5">
-          <Link to="/" onClick={() => setMobileOpen(false)} aria-label="MAPS home">
-            <Logo />
-          </Link>
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="lg:hidden press rounded-md p-1.5 -mr-1.5 text-foreground/45 hover:bg-muted"
-            aria-label="Close menu"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        Skip to content
+      </a>
 
-        <nav className="flex-1 px-3 pb-4 overflow-y-auto">
-          {navGroups.map((group, gi) => (
-            <div key={group.label ?? "root"} className={gi === 0 ? "" : "mt-6"}>
-              {group.label && (
-                <div className="type-label text-foreground/38 px-3 pb-2">{group.label}</div>
-              )}
-              <div className="space-y-px">
-                {group.links.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    end={link.end}
-                    onClick={() => setMobileOpen(false)}
-                    className={({ isActive }) =>
-                      `nav-link relative flex items-center gap-2.5 px-3 h-9 rounded-md ${
-                        isActive
-                          ? "text-foreground bg-muted font-medium"
-                          : "text-foreground/58 hover:text-foreground hover:bg-muted/60"
-                      }`
-                    }
-                    style={{ fontSize: "0.84375rem", letterSpacing: "-0.006em" }}
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <link.icon
-                          className="h-4 w-4 flex-shrink-0"
-                          strokeWidth={isActive ? 2.1 : 1.8}
-                        />
-                        {link.label}
-                      </>
-                    )}
-                  </NavLink>
+      <div className="flex min-h-screen w-full flex-col bg-white">
+
+        {/* Top bar */}
+        <header className="sticky top-0 z-40 bg-[hsl(var(--rail))]">
+          <div className="mx-auto flex h-16 w-full max-w-[1180px] items-center gap-6 px-5 sm:px-7 lg:h-[74px] lg:px-9">
+            <Link
+              to="/"
+              onClick={closeMenu}
+              aria-label="MAPS home"
+              className="shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70"
+            >
+              <Logo tone="invert" className="text-white" markClass="h-[26px] w-[26px]" />
+            </Link>
+
+            {/* Desktop nav */}
+            <nav aria-label="Main" className="hidden flex-1 lg:block">
+              <ul className="flex items-center gap-1">
+                {navLinks.map((link) => (
+                  <li key={link.to}>
+                    <NavLink
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) =>
+                        `flex h-10 items-center gap-2 rounded-full px-3 text-[0.875rem] font-medium whitespace-nowrap transition-colors ${
+                          isActive
+                            ? "bg-white text-foreground"
+                            : "text-white/70 hover:bg-white/[0.09] hover:text-white"
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <link.icon
+                            className="h-[17px] w-[17px] shrink-0"
+                            strokeWidth={isActive ? 2.2 : 1.75}
+                          />
+                          {link.label}
+                        </>
+                      )}
+                    </NavLink>
+                  </li>
                 ))}
-              </div>
-            </div>
-          ))}
-        </nav>
+              </ul>
+            </nav>
 
-        <div className="p-3">
-          <div className="rounded-lg bg-muted/70 px-3.5 py-3">
-            <div className="type-label text-foreground/45">Open access</div>
-            <p className="type-small text-foreground/62 mt-1.5 leading-snug">
-              No account, no paywall, no data collected.
-            </p>
+            <span className="ml-auto hidden shrink-0 rounded-full bg-white/[0.09] px-3.5 py-1.5 text-[0.75rem] font-medium text-white/70 xl:block">
+              No account · No paywall
+            </span>
+
+            <button
+              ref={menuButtonRef}
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="press ml-auto rounded-xl p-2.5 -mr-2 text-white/75 hover:bg-white/10 hover:text-white lg:hidden"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
-        </div>
-      </aside>
 
-      {/* Main pane */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Disclaimer — legally required, visually quiet. A yellow alert bar
-            shouts; a hairline strip informs. */}
-        {bannerOpen && (
-          <div className="border-b border-border bg-muted/45">
-            <div className="mx-auto max-w-[1100px] px-6 sm:px-8 lg:px-12">
-              <div className="flex items-center justify-between gap-4 py-2.5">
-                <p className="type-small text-foreground/58">
-                  <span className="text-foreground/80 font-medium">Self-service tool repository.</span>{" "}
+          {/* Mobile nav — a panel under the bar, not a side drawer. */}
+          {mobileOpen && (
+            <nav
+              id="mobile-nav"
+              ref={sidebarRef}
+              aria-label="Main"
+              className="border-t border-white/10 px-3 pb-4 pt-2 lg:hidden"
+            >
+              <ul className="space-y-1">
+                {navLinks.map((link) => (
+                  <li key={link.to}>
+                    <NavLink
+                      to={link.to}
+                      end={link.end}
+                      onClick={closeMenu}
+                      className={({ isActive }) =>
+                        `flex min-h-[48px] items-center gap-3 rounded-xl px-4 text-[0.95rem] font-medium ${
+                          isActive
+                            ? "bg-white text-foreground"
+                            : "text-white/75 hover:bg-white/[0.09] hover:text-white"
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <link.icon
+                            className="h-[18px] w-[18px] shrink-0"
+                            strokeWidth={isActive ? 2.2 : 1.75}
+                          />
+                          {link.label}
+                        </>
+                      )}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+        </header>
+
+        {/* Main pane */}
+        <div className="flex min-w-0 flex-1 flex-col bg-white">
+          {bannerOpen && (
+            <div className="bg-[hsl(var(--panel))]">
+              <div className="mx-auto flex w-full max-w-[1180px] items-start justify-between gap-4 px-5 py-3 sm:px-7 lg:px-9">
+                <p className="type-small text-foreground/60">
+                  <span className="font-semibold text-foreground/85">Self-service tool repository.</span>{" "}
                   We publish independent structural frameworks — not 1-on-1 coaching or advisory.
                 </p>
                 <button
-                  onClick={() => setBannerOpen(false)}
-                  className="press flex-shrink-0 rounded-md p-1 text-foreground/35 hover:text-foreground/70 hover:bg-foreground/5"
-                  aria-label="Dismiss"
+                  onClick={dismissBanner}
+                  className="press mt-0.5 shrink-0 rounded-lg p-1 text-foreground/35 hover:bg-foreground/5 hover:text-foreground/70"
+                  aria-label="Dismiss disclaimer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Content viewport — 1100px measure. 1280 is too wide for reading;
-            cards stretch and text lines run long. */}
-        <main className="flex-1 px-6 sm:px-8 lg:px-12 py-14 lg:py-20">
-          <div className="mx-auto max-w-[1100px]">
+          <main id="main" ref={mainRef} className="mx-auto w-full max-w-[1180px] flex-1 px-5 py-8 sm:px-7 lg:px-9 lg:py-11">
             <Outlet context={{ studentInfo, handleStudentInfoChange, checkedWeeks, toggleWeek, checkedSatSteps, toggleSatStep, checkedMilestones, toggleMilestone, trackedScholarships, toggleTrackScholarship, essayOutline, updateEssayOutline }} />
-          </div>
-        </main>
+          </main>
 
-        <footer className="border-t border-border px-6 sm:px-8 lg:px-12 py-10">
-          <div className="mx-auto max-w-[1100px] flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div className="flex items-center gap-2.5">
-              <Mark className="h-5 w-5 text-foreground" />
-              <div>
-                <div className="type-h4">Movement for Admissions Pathways &amp; Success</div>
-                <div className="type-small text-foreground/50 mt-0.5">
-                  Democratizing college admissions knowledge.
+          <footer className="mt-auto px-5 py-8 sm:px-7 lg:px-9">
+            <div className="mx-auto flex w-full max-w-[1180px] flex-col justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-2.5">
+                <Mark className="h-5 w-5 text-foreground" />
+                <div>
+                  <div className="type-h4">Movement for Admissions Pathways &amp; Success</div>
+                  <div className="type-small mt-0.5 text-foreground/50">
+                    Democratizing college admissions knowledge.
+                  </div>
                 </div>
               </div>
+              <p className="type-small text-foreground/45">
+                Every playbook is free. © {new Date().getFullYear()} MAPS.
+              </p>
             </div>
-            <p className="type-small text-foreground/45">
-              Every playbook is free. © {new Date().getFullYear()} MAPS.
-            </p>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </div>
-
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-40 bg-foreground/25 backdrop-blur-[2px] lg:hidden"
-        />
-      )}
     </div>
   );
 }

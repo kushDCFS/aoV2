@@ -8,10 +8,17 @@ import React from "react";
  * the header exists to do. Callers keep passing it; the design drops it.
  * An eyebrow label carries the same wayfinding signal for a fraction of the ink.
  */
-export default function PageHeader({ title, subtitle, eyebrow }) {
+export default function PageHeader({ title, subtitle, eyebrow, tone }) {
   return (
-    <header className="mb-14">
-      {eyebrow && <div className="type-label text-accent mb-3">{eyebrow}</div>}
+    <header className="mb-9 sm:mb-12 lg:mb-14">
+      {eyebrow && (
+        <div
+          className="type-label mb-3"
+          style={{ color: tone ? `hsl(${tone})` : "hsl(var(--accent))" }}
+        >
+          {eyebrow}
+        </div>
+      )}
       <h1 className="type-h1 optical-left text-balance">{title}</h1>
       {subtitle && (
         <p className="type-lead text-foreground/58 mt-4 max-w-[62ch]">{subtitle}</p>

@@ -8,6 +8,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import AcademicPaths from './pages/AcademicPaths';
 import ExtracurricularTracks from './pages/ExtracurricularTracks';
+import SummerPrograms from './pages/SummerPrograms';
 import ScholarshipFinder from './pages/ScholarshipFinder';
 import OutreachLab from './pages/OutreachLab';
 import OurMission from './pages/OurMission';
@@ -23,6 +24,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/academic-paths" element={<AcademicPaths />} />
             <Route path="/extracurricular-tracks" element={<ExtracurricularTracks />} />
+            <Route path="/summer-programs" element={<SummerPrograms />} />
             <Route path="/scholarship-finder" element={<ScholarshipFinder />} />
             <Route path="/outreach-lab" element={<OutreachLab />} />
             <Route path="/our-mission" element={<OurMission />} />

@@ -1,28 +1,49 @@
 import React from "react";
 
 /**
- * The MAPS mark — a cartographic north arrow, reduced to constructed geometry.
+ * The MAPS mark — an "A" with a route sweeping up through it.
  *
- * Vertical-dominant (extends 1→23 on Y, only 5→19 on X) so it reads as a bearing
- * needle rather than a generic four-point sparkle. The waist is pinched with
- * quadratic curves; the lower half carries less weight, the way a real compass
- * needle is counterbalanced.
+ * The A is drawn as a single open arch (one stroke, round caps) rather than
+ * three separate members, so it holds together at 20px in the top bar. The
+ * rising path replaces the crossbar: it enters low on the left, crosses the
+ * A's waist, and exits as an arrowhead at upper right. The crossbar doing
+ * double duty as the trajectory is the whole idea — access going up.
+ *
+ * `tone="invert"` is for the dark bar; the arrow keeps full opacity in both
+ * tones because it is the load-bearing half of the mark.
  */
 export function Mark({ className = "h-6 w-6", tone = "ink" }) {
-  const top = tone === "invert" ? "#FFFFFF" : "currentColor";
-  const bottom = tone === "invert" ? "rgba(255,255,255,0.42)" : "currentColor";
-  const bottomOpacity = tone === "invert" ? 1 : 0.32;
+  const color = tone === "invert" ? "#FFFFFF" : "currentColor";
 
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <svg viewBox="0 0 48 48" fill="none" className={className} aria-hidden="true">
+      {/* The A — one open arch, apex rounded, legs splayed wide enough that the
+          counter survives at 20px. */}
       <path
-        d="M12 1 Q13.4 10.6 19 12 L5 12 Q10.6 10.6 12 1 Z"
-        fill={top}
+        d="M11 40 L20.4 15.8 A 3.9 3.9 0 0 1 27.6 15.8 L37 40"
+        stroke={color}
+        strokeWidth="5.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
       />
+      {/* The route. Crosses the A where the crossbar would be — the crossbar
+          doing double duty as the trajectory is the mark's whole idea — then
+          climbs clear of the right leg before the head. */}
       <path
-        d="M19 12 Q13.4 13.4 12 23 Q10.6 13.4 5 12 Z"
-        fill={bottom}
-        opacity={bottomOpacity}
+        d="M6.8 34.4 C13.4 35.4 18.6 33.6 24.2 29.8 C29 26.5 32.6 22.8 35.8 19"
+        stroke={color}
+        strokeWidth="4.9"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Arrowhead, aligned to the path's exit bearing. */}
+      <path
+        d="M43.2 9.8 L33.6 11.6 L41.1 18.9 Z"
+        fill={color}
+        stroke={color}
+        strokeWidth="2.6"
+        strokeLinejoin="round"
       />
     </svg>
   );

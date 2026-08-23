@@ -1,0 +1,13 @@
+{
+  "name": "MAPS — Movement for Admissions Pathways & Success",
+  "short_name": "MAPS",
+  "description": "Every free college admissions opportunity in one place — scholarships, self-study roadmaps, extracurricular tracks, and outreach templates.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#12141B",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

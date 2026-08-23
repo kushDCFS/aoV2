@@ -11,6 +11,7 @@ export default function ExtracurricularTracks() {
     <div>
       <PageHeader
         eyebrow="Playbook"
+        tone="var(--c-extra-ink)"
         title="Extracurricular tracks"
         subtitle="Six career-field tracks. Each one includes a free national competition, a $0 portfolio project blueprint, and a virtual experience/shadowing playbook — all using free resources."
       />
@@ -21,7 +22,7 @@ export default function ExtracurricularTracks() {
       <div
         role="tablist"
         aria-label="Extracurricular tracks"
-        className="panel flex flex-wrap gap-1 p-1.5 mb-10"
+        className="page-card flex flex-wrap gap-1 p-1.5 mb-10"
       >
         {tracks.map((track) => {
           const isActive = track.key === active;

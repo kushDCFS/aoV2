@@ -5,18 +5,24 @@ import PageHeader from "@/components/PageHeader";
 const pillars = [
   {
     icon: Heart,
+    tone: "var(--c-outreach)",
+    ink: "var(--c-outreach-ink)",
     title: "Admissions equity",
     description:
       "The same blueprints and frameworks that expensive consulting firms keep behind paywalls, published openly for candidates who cannot buy them.",
   },
   {
     icon: Globe,
+    tone: "var(--c-sky)",
+    ink: "var(--c-sky-ink)",
     title: "Global reach",
     description:
       "Open across all 50 states and 190+ countries, so international applicants get the same structure as domestic ones.",
   },
   {
     icon: Sparkles,
+    tone: "var(--c-extra)",
+    ink: "var(--c-extra-ink)",
     title: "Free and self-serve",
     description:
       "No sign-ups, zero personal data collected, no hidden coaching packages. There is nothing to upgrade to.",
@@ -68,10 +74,13 @@ export default function OurMission() {
           {pillars.map((pillar, i) => (
             <div
               key={pillar.title}
-              className="stagger-in panel p-7 flex gap-5"
+              className="stagger-in page-card p-7 flex gap-5"
               style={{ animationDelay: `${i * 70}ms` }}
             >
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+              <div
+                className="icon-tile"
+                style={{ "--tone": pillar.tone, "--tone-ink": pillar.ink }}
+              >
                 <pillar.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
               </div>
               <div>
@@ -84,8 +93,8 @@ export default function OurMission() {
       </section>
 
       <section className="mt-20 lg:mt-28">
-        <div className="panel p-8 sm:p-10 flex flex-col sm:flex-row gap-6 items-start">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+        <div className="page-card p-8 sm:p-10 flex flex-col sm:flex-row gap-6 items-start">
+          <div className="icon-tile">
             <ShieldAlert className="h-[18px] w-[18px]" strokeWidth={1.8} />
           </div>
           <div>

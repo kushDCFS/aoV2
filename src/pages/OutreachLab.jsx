@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Mail, Copy, Check, Table2, Search, Sparkles, ExternalLink, Loader2, GraduationCap, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
+import { Copy, Check, Search, Sparkles, ExternalLink, Loader2, GraduationCap, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { emailTemplates, trackerExample, professorTemplates } from "@/lib/outreachData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -255,12 +255,13 @@ export default function OutreachLab() {
     <div>
       <PageHeader
         eyebrow="Playbook"
+        tone="var(--c-outreach-ink)"
         title="The outreach lab"
         subtitle="Search a database of active research professors from top universities, filter by major track, and dynamically draft personalized cold emails in seconds."
       />
 
       <Tabs defaultValue="professors">
-        <TabsList className="panel inline-flex flex-wrap gap-1 p-1.5 h-auto bg-card max-w-full">
+        <TabsList className="page-card inline-flex flex-wrap gap-1 p-1.5 h-auto bg-card max-w-full">
           <TabsTrigger
             value="professors"
             className="flex items-center gap-2 rounded-lg px-4 h-9 text-[13.5px] font-medium text-foreground/55 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none transition-colors duration-150"
@@ -279,7 +280,7 @@ export default function OutreachLab() {
 
         <TabsContent value="professors" className="mt-8 space-y-6 outline-none">
           {wakingUp && (
-            <div className="panel flex items-center gap-4 p-5">
+            <div className="page-card flex items-center gap-4 p-5">
               <Loader2 className="h-4 w-4 animate-spin flex-shrink-0 text-foreground/50" />
               <p className="type-small text-foreground/62">
                 <strong className="text-foreground font-medium">Waking up the database server.</strong>{" "}
@@ -289,7 +290,7 @@ export default function OutreachLab() {
             </div>
           )}
 
-          <form onSubmit={handleSearchSubmit} className="panel p-7">
+          <form onSubmit={handleSearchSubmit} className="page-card p-7">
             <h3 className="type-h4 mb-5">Filter &amp; search engine</h3>
 
             <div className="grid gap-5 sm:grid-cols-3">
@@ -353,7 +354,7 @@ export default function OutreachLab() {
           </form>
 
           {error && (
-            <div className="panel flex items-center gap-4 p-5 border-destructive/20 bg-destructive/[0.04]">
+            <div className="page-card flex items-center gap-4 p-5 border-destructive/20 bg-destructive/[0.04]">
               <AlertCircle className="h-4 w-4 flex-shrink-0 text-destructive" strokeWidth={1.9} />
               <span className="type-small text-foreground/75 flex-1">{error}</span>
               <button
@@ -366,7 +367,7 @@ export default function OutreachLab() {
           )}
 
           {professors.length === 0 && !loading && !error ? (
-            <div className="panel flex flex-col items-center justify-center py-20 text-center">
+            <div className="page-card flex flex-col items-center justify-center py-20 text-center">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-foreground/50 mb-4">
                 <Search className="h-5 w-5" strokeWidth={1.7} />
               </div>
@@ -386,7 +387,7 @@ export default function OutreachLab() {
                             rounded-full badge whose text wraps to two lines
                             renders as a giant lozenge — and long university
                             names always wrap. */}
-                        <div className="type-label text-accent">{clean(prof.university)}</div>
+                        <div className="type-label" style={{ color: "hsl(var(--c-outreach-ink))" }}>{clean(prof.university)}</div>
 
                         <h4 className="type-h3 mt-2.5 group-hover:text-accent transition-colors duration-200">
                           {clean(prof.name)}
@@ -467,7 +468,7 @@ export default function OutreachLab() {
         <TabsContent value="playbooks" className="mt-8 space-y-16 outline-none">
           <section>
             <Reveal className="mb-6">
-              <div className="type-label text-accent">Outreach strategy</div>
+              <div className="type-label" style={{ color: "hsl(var(--c-outreach-ink))" }}>Outreach strategy</div>
               <h2 className="type-h3 mt-2">Cold email playbook</h2>
               <p className="type-body text-foreground/58 mt-2 max-w-[62ch]">
                 Three fill-in-the-blank email templates for high school students. Replace every
@@ -513,7 +514,7 @@ export default function OutreachLab() {
               ))}
             </RevealGroup>
 
-            <Reveal delay={0.1} className="panel mt-4 p-6">
+            <Reveal delay={0.1} className="page-card mt-4 p-6">
               <p className="type-small text-foreground/65">
                 <strong className="text-foreground font-medium">Pro tip:</strong> Send emails on
                 Tuesday or Wednesday mornings (8–10 AM). Follow up exactly 7 days after your first
@@ -526,11 +527,11 @@ export default function OutreachLab() {
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <Reveal className="mb-6">
-                <div className="type-label text-accent">Worksheets</div>
+                <div className="type-label" style={{ color: "hsl(var(--c-outreach-ink))" }}>Worksheets</div>
                 <h2 className="type-h3 mt-2">Tracker matrix</h2>
               </Reveal>
 
-              <Reveal delay={0.06} className="panel overflow-x-auto">
+              <Reveal delay={0.06} className="page-card overflow-x-auto">
                 <table className="data-table">
                   <thead>
                     <tr>
@@ -562,9 +563,9 @@ export default function OutreachLab() {
               </Reveal>
             </div>
 
-            <Reveal delay={0.1} className="panel p-7 flex flex-col justify-between">
+            <Reveal delay={0.1} className="page-card p-7 flex flex-col justify-between">
               <div>
-                <div className="type-label text-accent">Setup instructions</div>
+                <div className="type-label" style={{ color: "hsl(var(--c-outreach-ink))" }}>Setup instructions</div>
                 <h4 className="type-h4 mt-2 mb-4">Recreate in Google Sheets</h4>
                 <ol className="space-y-3.5">
                   {[
@@ -613,7 +614,7 @@ export default function OutreachLab() {
 
           <div className="grid gap-8 md:grid-cols-5">
             <div className="md:col-span-2 space-y-4 md:border-r md:border-border md:pr-6">
-              <h4 className="type-label text-accent">Your profile</h4>
+              <h4 className="type-label" style={{ color: "hsl(var(--c-outreach-ink))" }}>Your profile</h4>
 
               <div>
                 <label className="type-small font-medium text-foreground/62 block mb-1.5">Your full name</label>
@@ -693,7 +694,7 @@ export default function OutreachLab() {
 
             <div className="md:col-span-3 flex flex-col space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="type-label text-accent">Generated draft</h4>
+                <h4 className="type-label" style={{ color: "hsl(var(--c-outreach-ink))" }}>Generated draft</h4>
                 {clean(selectedProf?.email) && (
                   <a
                     href={`mailto:${selectedProf.email}?subject=${encodeURIComponent(compiled.subject)}&body=${encodeURIComponent(compiled.body)}`}
@@ -704,7 +705,7 @@ export default function OutreachLab() {
                 )}
               </div>
 
-              <div className="relative panel px-5 py-4">
+              <div className="relative page-card px-5 py-4">
                 <div className="type-label text-foreground/38 mb-1.5">Subject</div>
                 <div className="type-small font-medium text-foreground pr-10">{compiled.subject}</div>
                 <button
@@ -720,7 +721,7 @@ export default function OutreachLab() {
                 </button>
               </div>
 
-              <div className="relative flex-1 panel p-5 flex flex-col">
+              <div className="relative flex-1 page-card p-5 flex flex-col">
                 <div className="type-label text-foreground/38 mb-2">Message body</div>
                 <div className="type-small text-foreground/55 mb-2.5 pb-2.5 border-b border-border">
                   To:{" "}

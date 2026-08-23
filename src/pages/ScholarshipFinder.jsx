@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import UsStateMap from "@/components/UsStateMap";
-import { scholarships, noEssayScholarships, localScholarshipSteps } from "@/lib/scholarshipData";
+import { scholarships, localScholarshipSteps } from "@/lib/scholarshipData";
 import { stateFlagshipPrograms, scholarshipCategories, stateFullNames, searchLink } from "@/lib/stateScholarshipData";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 
@@ -12,7 +12,7 @@ const categoryIcons = { Landmark, FlaskConical, Palette, DoorOpen, Wheat, HeartP
 
 function SegmentedSwitch({ tab, setTab }) {
   return (
-    <div role="tablist" className="panel inline-flex gap-1 p-1.5">
+    <div role="tablist" className="page-card inline-flex gap-1 p-1.5">
       {[
         { key: "state", label: "Browse by state" },
         { key: "national", label: "National lists" },
@@ -48,8 +48,9 @@ export default function ScholarshipFinder() {
     <div>
       <PageHeader
         eyebrow="Playbook"
+        tone="var(--c-money-ink)"
         title="Scholarship finder"
-        subtitle={`${scholarships.length + noEssayScholarships.length}+ national scholarships, plus a flagship aid program and search directory for all ${stateCount} states.`}
+        subtitle={`${scholarships.length}+ national scholarships, plus a flagship aid program and search directory for all ${stateCount} states.`}
       />
 
       <Reveal>
@@ -59,7 +60,7 @@ export default function ScholarshipFinder() {
       {tab === "state" && (
         <section className="grid gap-6 lg:grid-cols-5 mt-8">
           {/* Map */}
-          <Reveal delay={0.05} className="lg:col-span-3 panel p-7">
+          <Reveal delay={0.05} className="lg:col-span-3 page-card p-7">
             <div className="flex items-center justify-between mb-1">
               <h2 className="type-h4">Select a state</h2>
               {selectedState && (
@@ -80,7 +81,7 @@ export default function ScholarshipFinder() {
           {/* State detail panel */}
           <div className="lg:col-span-2">
             {!selectedState ? (
-              <div className="panel h-full min-h-[280px] flex flex-col items-center justify-center text-center gap-4 px-8">
+              <div className="page-card h-full min-h-[280px] flex flex-col items-center justify-center text-center gap-4 px-8">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-foreground/50">
                   <MapPin className="h-5 w-5" strokeWidth={1.6} />
                 </div>
@@ -90,9 +91,9 @@ export default function ScholarshipFinder() {
                 </p>
               </div>
             ) : (
-              <div key={selectedState} className="stagger-in panel p-7 space-y-6">
+              <div key={selectedState} className="stagger-in page-card p-7 space-y-6">
                 <div>
-                  <div className="type-label text-accent">{selectedState}</div>
+                  <div className="type-label" style={{ color: "hsl(var(--c-money-ink))" }}>{selectedState}</div>
                   <h3 className="type-h2 mt-1.5">{stateName}</h3>
                 </div>
 
@@ -160,7 +161,7 @@ export default function ScholarshipFinder() {
               </p>
             </Reveal>
 
-            <Reveal delay={0.06} className="panel overflow-x-auto">
+            <Reveal delay={0.06} className="page-card overflow-x-auto">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -194,52 +195,33 @@ export default function ScholarshipFinder() {
             </Reveal>
           </section>
 
-          {/* No-Essay Scholarships */}
+          {/* Why we don't list no-essay sweepstakes */}
           <section>
             <Reveal className="mb-6">
-              <h2 className="type-h3">No-essay &amp; rolling monthly scholarships</h2>
-              <p className="type-body text-foreground/58 mt-2 max-w-[62ch]">
-                No essays. Reset every month or quarter. Enter as many as you can, every cycle.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.06} className="panel overflow-x-auto">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Award</th>
-                    <th>Deadline</th>
-                    <th>Details</th>
-                    <th className="w-8" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {noEssayScholarships.map((s) => (
-                    <tr key={s.name}>
-                      <td className="min-w-[190px]">{s.name}</td>
-                      <td className="tnum whitespace-nowrap">{s.award}</td>
-                      <td className="text-accent font-medium whitespace-nowrap">{s.deadline}</td>
-                      <td className="min-w-[240px]">{s.details}</td>
-                      <td>
-                        <a
-                          href={s.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-foreground/30 hover:text-accent transition-colors"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} />
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <h2 className="type-h3">A note on &ldquo;no-essay&rdquo; scholarships</h2>
+              <div className="type-body text-foreground/58 mt-2 max-w-[62ch] space-y-3">
+                <p>
+                  We used to list no-essay and rolling monthly scholarships here. We
+                  don&rsquo;t anymore. Almost all of them are lead generation: the entry form
+                  is the product, and the contact details you submit get sold on to
+                  advertisers. The award itself is drawn from a very large pool, so the odds
+                  are closer to a raffle than an application.
+                </p>
+                <p>
+                  An hour spent on the local awards below is worth more than a year of
+                  sweepstakes entries. Those have applicant pools in the dozens, not the
+                  hundreds of thousands, and nobody resells your email for entering.{" "}
+                  <a href="#hyper-local" className="text-accent underline underline-offset-4 hover:text-foreground transition-colors">
+                    Start with the hyper-local strategy
+                  </a>
+                  .
+                </p>
+              </div>
             </Reveal>
           </section>
 
           {/* Hyper-local strategy */}
-          <section>
+          <section id="hyper-local" className="scroll-mt-24">
             <Reveal className="flex items-center gap-3 pb-4 mb-6 border-b border-border">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-foreground/60">
                 <MapPin className="h-4 w-4" strokeWidth={1.8} />

@@ -63,6 +63,7 @@ export default function AcademicPaths() {
     <div>
       <PageHeader
         eyebrow="Playbook"
+        tone="var(--c-academic-ink)"
         title="Academic paths"
         subtitle="Structured, zero-cost frameworks for AP/IB exams and SAT prep. No paid courses, no tutors — just free resources used in a proven system."
       />
@@ -71,7 +72,7 @@ export default function AcademicPaths() {
       <section>
         <Reveal className="flex items-end justify-between gap-6 mb-6">
           <div>
-            <div className="type-label text-accent">Standardized testing</div>
+            <div className="type-label" style={{ color: "hsl(var(--c-academic-ink))" }}>Standardized testing</div>
             <h2 className="type-h2 mt-3 optical-left">AP &amp; IB self-study bootcamps</h2>
             <p className="type-body text-foreground/58 mt-3 max-w-[52ch]">
               An 8-week structured timeline. Check off each week as you complete it.
@@ -86,7 +87,7 @@ export default function AcademicPaths() {
           </div>
         </Reveal>
 
-        <Reveal delay={0.08} className="panel overflow-x-auto">
+        <Reveal delay={0.08} className="page-card overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>
@@ -179,7 +180,7 @@ export default function AcademicPaths() {
       <section className="mt-20 lg:mt-28">
         <Reveal className="flex items-end justify-between gap-6 mb-8 pb-6 border-b border-border">
           <div>
-            <div className="type-label text-accent">Standardized testing</div>
+            <div className="type-label" style={{ color: "hsl(var(--c-academic-ink))" }}>Standardized testing</div>
             <h2 className="type-h2 mt-3 optical-left">Zero-dollar SAT 1500+ framework</h2>
           </div>
           <span className="type-small text-foreground/45 tnum flex-shrink-0">
@@ -223,12 +224,12 @@ export default function AcademicPaths() {
           })}
         </RevealGroup>
 
-        <Reveal delay={0.1} className="panel mt-4 p-7 flex items-start gap-4">
+        <Reveal delay={0.1} className="page-card mt-4 p-7 flex items-start gap-4">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
             <Check className="h-4 w-4" strokeWidth={2} />
           </div>
           <div>
-            <div className="type-label text-accent">Core insight</div>
+            <div className="type-label" style={{ color: "hsl(var(--c-academic-ink))" }}>Core insight</div>
             <h4 className="type-h4 mt-1">Mistakes journal strategy</h4>
             <p className="type-small text-foreground/58 mt-2 max-w-[62ch]">
               The students who score 1500+ aren&rsquo;t smarter — they just review their mistakes

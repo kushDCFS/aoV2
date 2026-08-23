@@ -1,343 +1,274 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  BookOpen,
-  Users,
-  Award,
-  Mail,
-  ArrowRight,
-  ArrowUpRight,
-} from "lucide-react";
-import { scholarships, noEssayScholarships } from "@/lib/scholarshipData";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { scholarships } from "@/lib/scholarshipData";
 import { tracks } from "@/lib/trackData";
 import { emailTemplates, professorTemplates } from "@/lib/outreachData";
 import { searchLink } from "@/lib/stateScholarshipData";
-import EditorialImage from "@/components/EditorialImage";
-import { Reveal, RevealGroup, RevealItem, CountUp } from "@/components/Reveal";
-import { motion } from "framer-motion";
+import { Reveal, CountUp } from "@/components/Reveal";
+import ControlPanel from "@/components/home/ControlPanel";
+import { allPrograms } from "@/lib/programs";
 
-const totalScholarships = scholarships.length + noEssayScholarships.length;
+/* Every number on this page is derived from the catalogs, never typed in.
+   A landing page that overstates what is behind it is the same problem as a
+   consultant who overstates what they can do for you. */
+const totalScholarships = scholarships.length;
 const totalTracks = tracks?.length || 6;
 const totalTemplates = (emailTemplates?.length || 0) + (professorTemplates?.length || 0);
+const freeOrPaidPrograms = allPrograms.filter((p) =>
+  ["pays-student", "free", "free-plus-aid"].includes(p.cost)
+).length;
 
 const stats = [
-  { label: "Scholarships listed", value: `${totalScholarships}+` },
-  { label: "Extracurricular tracks", value: `${totalTracks}` },
-  { label: "Outreach templates", value: `${totalTemplates}+` },
-  { label: "Cost to use any of it", value: "$0" },
+  { value: `${freeOrPaidPrograms}`, label: "Summer programs that are free, or pay you" },
+  { value: `${totalScholarships}`, label: "Major scholarships, linked direct" },
+  { value: `${totalTracks}`, label: "Extracurricular tracks" },
+  { value: `${totalTemplates}+`, label: "Cold-email templates" },
 ];
 
-const sections = [
+/* The four promises, stated as what we refuse to do. Easier to hold us to. */
+const promises = [
   {
-    to: "/academic-paths",
-    icon: BookOpen,
-    title: "Academic Paths",
-    description:
-      "8-week AP/IB self-study bootcamps and a zero-dollar SAT 1500+ framework built entirely on free resources.",
-    meta: "2 frameworks",
+    k: "No account, ever",
+    v: "Nothing is gated. There is no sign-up wall anywhere on this site, and no email box asking for yours.",
+    tone: "var(--c-academic)",
   },
   {
-    to: "/extracurricular-tracks",
-    icon: Users,
-    title: "Extracurricular Tracks",
-    description:
-      "Six career-field tracks with free national competitions, $0 portfolio blueprints, and virtual shadowing playbooks.",
-    meta: `${totalTracks} tracks`,
+    k: "No affiliate links",
+    v: "We removed every referral link that paid us. Each program and award points straight at the institution running it.",
+    tone: "var(--c-extra)",
   },
   {
-    to: "/scholarship-finder",
-    icon: Award,
-    title: "Scholarship Finder",
-    description:
-      "Major national awards alongside no-essay, rolling-monthly money you can enter before the end of today.",
-    meta: `${totalScholarships}+ awards`,
+    k: "Nothing collected",
+    v: "There is no server storing anything about you. What you check off is saved on your own device and never sent.",
+    tone: "var(--c-sky)",
   },
   {
-    to: "/outreach-lab",
-    icon: Mail,
-    title: "The Outreach Lab",
-    description:
-      "Copy-paste cold email templates for research labs, businesses, and nonprofits — plus a follow-up tracker matrix.",
-    meta: `${totalTemplates}+ templates`,
+    k: "No vague advice",
+    v: "Dated frameworks, real deadlines, and templates you can paste today — not “follow your passion.”",
+    tone: "var(--c-outreach)",
   },
 ];
 
-// Pull just the dollar figure out of a longer award sentence, e.g.
-// "Up to $55,000 per year for 4 years (total up to $220,000)." -> "Up to $220,000"
 const extractAward = (text) => {
   const matches = text.match(/\$[\d,]+(?:\s?(?:per year|\/year))?/gi);
   if (matches) {
     return matches[matches.length - 1]
       .replace(/\s?(per year|\/year)/i, "")
-      // Trailing separators get swept up by the [\d,] class — "$25,000," —
-      // so trim any comma the number didn't actually need.
       .replace(/[,.]+$/, "");
   }
   return "Full ride";
 };
 
-const opportunityFeed = [
-  ...scholarships.map((s) => ({
+const previewFeed = scholarships
+  .map((s) => ({
     name: s.name,
     award: extractAward(s.award),
-    tag: "Major award",
     url: s.url || searchLink(s.name),
-  })),
-  ...noEssayScholarships.map((s) => ({
-    name: s.name,
-    award: s.award,
-    tag: "No essay",
-    url: s.url || searchLink(s.name),
-  })),
-];
+  }))
+  .slice(0, 8);
 
-const previewFeed = opportunityFeed.slice(0, 10);
-
-const principles = [
-  { k: "No account", v: "Nothing is gated. There is no sign-up wall anywhere on this site." },
-  { k: "No cost", v: "Every listed resource is free to use or $0 to enter. No affiliate links." },
-  { k: "No tracking", v: "We collect zero personal data, so there is nothing to opt out of." },
-  { k: "No vagueness", v: "Structured frameworks with dates and steps — not motivational advice." },
-];
-
-/* A section header: eyebrow label, title, optional trailing action.
-   No icon. Icons beside section titles are a dashboard-template tic. */
-function SectionHead({ label, title, action }) {
+function SectionHead({ label, title, blurb, action, tone = "var(--c-academic-ink)" }) {
   return (
-    <Reveal className="flex items-end justify-between gap-6 mb-8">
-      <div>
-        <div className="type-label text-accent">{label}</div>
-        <h2 className="type-h2 mt-3 optical-left">{title}</h2>
+    <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+      <div className="max-w-[54ch]">
+        <div className="type-label" style={{ color: `hsl(${tone})` }}>
+          {label}
+        </div>
+        <h2 className="type-h2 mt-2">{title}</h2>
+        {blurb && <p className="type-body mt-2.5 text-foreground/60">{blurb}</p>}
       </div>
       {action}
-    </Reveal>
+    </div>
   );
 }
 
 export default function Home() {
   return (
     <div>
-      {/* ── Hero ───────────────────────────────────────────────────────────
-          Asymmetric 7/5 split. The image is not decoration bolted on the
-          right — it carries the emotional argument the copy cannot. The
-          hero plays once on load (not on scroll — it's already in view),
-          staggered word-group by word-group so the page feels like it
-          switched on rather than just appeared. */}
-      <section className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-        <div className="lg:col-span-7">
-          <motion.div
-            className="type-label text-accent"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      {/* ── Why this exists ─────────────────────────────────────────────────
+          The landing has to answer one question before anything else: why
+          should a student trust a free site about a thing everyone else
+          charges for. So the reason comes first, and the tool comes second. */}
+      <section className="panel-field rounded-[var(--r-card)] px-6 pb-12 pt-11 sm:px-9 lg:px-12 lg:pb-16 lg:pt-16">
+        <div className="max-w-[60ch]">
+          <span
+            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[0.78rem] font-semibold"
+            style={{
+              background: "hsl(var(--c-extra) / 0.18)",
+              color: "hsl(var(--c-extra-ink))",
+            }}
           >
-            No sign-up · No paywall · Ever
-          </motion.div>
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: "hsl(var(--c-extra-ink))" }}
+            />
+            Free forever · No account · No data collected
+          </span>
 
-          <motion.h1
-            className="type-display mt-6 optical-left text-balance"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-          >
-            Every free admissions opportunity,{" "}
-            <span className="type-editorial">in one place.</span>
-          </motion.h1>
+          <h1 className="type-display mt-6">
+            Getting into a great college shouldn&rsquo;t depend on what your
+            family can pay.
+          </h1>
 
-          <motion.p
-            className="type-lead text-foreground/62 mt-7 max-w-[54ch]"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {totalScholarships}+ scholarships, self-study roadmaps, extracurricular tracks,
-            and outreach templates — fully open, nothing held behind an account.
-            Browse it like a catalog, not a dashboard.
-          </motion.p>
+          <p className="type-lead mt-5 text-foreground/65">
+            Private admissions consultants charge thousands of dollars for
+            something that is mostly just structure — which programs exist, when
+            they close, and what to write. None of that is secret. We publish all
+            of it, for free, to everyone, permanently.
+          </p>
 
-          <motion.div
-            className="mt-9 flex flex-wrap items-center gap-3"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <Link to="/scholarship-finder" className="btn-primary">
-              Browse {totalScholarships}+ scholarships
-              <ArrowRight className="h-4 w-4" strokeWidth={2} />
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link
+              to="/summer-programs"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-full px-6 text-[0.95rem] font-semibold text-white transition-transform hover:-translate-y-0.5"
+              style={{ background: "hsl(var(--c-academic-ink))" }}
+            >
+              Find a free summer program
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link to="/academic-paths" className="btn-secondary">
-              Explore academic paths
+            <Link
+              to="/our-mission"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[0.95rem] font-semibold text-foreground/80 transition-transform hover:-translate-y-0.5 hover:text-foreground"
+            >
+              Why we built this
             </Link>
-          </motion.div>
-
-          <motion.p
-            className="type-small text-foreground/42 mt-7"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            Built for students without a $300/hour counselor.
-          </motion.p>
+          </div>
         </div>
 
-        <motion.div
-          className="lg:col-span-5"
-          initial={{ opacity: 0, scale: 0.96, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <EditorialImage
-            src="/images/hero-desk.jpg"
-            alt="A student working through college applications at a kitchen table in late afternoon light."
-            ratio="4 / 5"
-            priority
-          />
-        </motion.div>
-      </section>
-
-      {/* ── Stat bar ───────────────────────────────────────────────────────
-          One panel with hairline dividers, not four floating cards. Four
-          bordered boxes in a row is the single most template-looking pattern
-          in dashboard design. */}
-      <section className="mt-20 lg:mt-28">
-        <Reveal className="panel grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border">
-          {stats.map((stat) => (
-            <div key={stat.label} className="px-6 py-7">
+        {/* Proof, immediately under the claim. */}
+        <Reveal className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {stats.map((s) => (
+            <div key={s.label} className="dash-card p-5 sm:p-6">
               <div className="type-stat tnum">
-                <CountUp value={stat.value} />
+                <CountUp value={s.value} />
               </div>
-              <div className="type-small text-foreground/50 mt-2">{stat.label}</div>
+              <div className="type-small mt-2 leading-snug text-foreground/55">
+                {s.label}
+              </div>
             </div>
           ))}
         </Reveal>
       </section>
 
-      {/* ── Playbooks ──────────────────────────────────────────────────── */}
-      <section className="mt-20 lg:mt-28">
-        <SectionHead label="The library" title="Four playbooks, fully open" />
-
-        <RevealGroup className="grid gap-4 sm:grid-cols-2">
-          {sections.map((section) => (
-            <RevealItem key={section.to}>
-              <Link to={section.to} className="group card p-7 flex h-full flex-col">
-                <div className="flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground/70">
-                    <section.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                  </div>
-                  <span className="type-small text-foreground/38 tnum">{section.meta}</span>
-                </div>
-
-                <h3 className="type-h3 mt-6">{section.title}</h3>
-                <p className="type-body text-foreground/58 mt-2.5 flex-1">{section.description}</p>
-
-                <span className="link-arrow text-foreground/70 group-hover:text-accent mt-6">
-                  Open playbook
-                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-                </span>
-              </Link>
-            </RevealItem>
-          ))}
-        </RevealGroup>
+      {/* ── The tool ───────────────────────────────────────────────────────── */}
+      <section className="mt-14 lg:mt-20">
+        <ControlPanel scholarshipCount={totalScholarships} />
       </section>
 
-      {/* ── Opportunity feed ───────────────────────────────────────────────
-          A catalog is a list, not a grid of cards. Rows separated by
-          hairlines scan far faster and read as a real database. */}
-      <section className="mt-20 lg:mt-28">
+      {/* ── What we refuse to do ───────────────────────────────────────────
+          Promises are easier to verify when they are stated as refusals. */}
+      <section className="mt-16 lg:mt-24">
+        <SectionHead
+          label="How this works"
+          title="Four things we will never do."
+          blurb="Most free college sites are free because you are the product. Here is what we give up in order not to be."
+          tone="var(--c-extra-ink)"
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {promises.map((p) => (
+            <div key={p.k} className="dash-card p-6">
+              <span
+                aria-hidden="true"
+                className="block h-1.5 w-10 rounded-full"
+                style={{ background: `hsl(${p.tone})` }}
+              />
+              <h3 className="type-h4 mt-4">{p.k}</h3>
+              <p className="type-small mt-2 leading-relaxed text-foreground/60">
+                {p.v}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Awards ─────────────────────────────────────────────────────────── */}
+      <section className="mt-16 lg:mt-24">
         <SectionHead
           label="Money"
-          title="Live opportunity feed"
+          title="The awards actually worth your time."
+          blurb="No-essay sweepstakes were removed from this site — they sell your contact details and pay out like a raffle. These are the real ones."
+          tone="var(--c-money-ink)"
           action={
-            <Link to="/scholarship-finder" className="link-arrow text-accent">
-              All {totalScholarships}+ opportunities
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+            <Link
+              to="/scholarship-finder"
+              className="type-small inline-flex items-center gap-1.5 font-semibold"
+              style={{ color: "hsl(var(--c-money-ink))" }}
+            >
+              All {totalScholarships} awards
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           }
         />
-
-        <Reveal className="panel overflow-hidden">
-          {previewFeed.map((op, i) => (
-            <a
-              key={op.name}
-              href={op.url}
-              target="_blank"
-              rel="noreferrer"
-              className={`row group flex items-center gap-5 px-6 py-4 ${
-                i !== 0 ? "border-t border-border" : ""
-              }`}
-            >
-              <span className="type-small text-foreground/28 tnum w-6 flex-shrink-0">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-
-              <span className="type-h4 flex-1 min-w-0 truncate">{op.name}</span>
-
-              <span className="type-small text-foreground/45 hidden sm:block w-24 flex-shrink-0">
-                {op.tag}
-              </span>
-
-              <span className="type-small font-medium tnum text-right w-32 flex-shrink-0 whitespace-nowrap">
-                {op.award}
-              </span>
-
-              <ArrowUpRight
-                className="h-4 w-4 text-foreground/20 group-hover:text-accent flex-shrink-0 transition-colors"
-                strokeWidth={1.8}
-              />
-            </a>
+        <ul className="dash-card divide-y divide-[hsl(220_30%_95%)] overflow-hidden">
+          {previewFeed.map((s, i) => (
+            <li key={s.name}>
+              <a
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-[hsl(var(--panel))] sm:px-6"
+              >
+                <span className="tnum type-small w-6 shrink-0 text-foreground/30">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1 text-[0.9rem] font-semibold text-foreground">
+                  {s.name}
+                </span>
+                <span
+                  className="tnum shrink-0 rounded-full px-3 py-1 text-[0.8rem] font-semibold"
+                  style={{
+                    background: "hsl(var(--c-money) / 0.2)",
+                    color: "hsl(var(--c-money-ink))",
+                  }}
+                >
+                  {s.award}
+                </span>
+                <ArrowUpRight
+                  className="h-4 w-4 shrink-0 text-foreground/25"
+                  aria-hidden="true"
+                />
+              </a>
+            </li>
           ))}
-        </Reveal>
+        </ul>
       </section>
 
-      {/* ── Mission ────────────────────────────────────────────────────────
-          Inverted ink panel. One dark moment breaks a long white page and
-          gives the close real weight. */}
-      <section className="mt-20 lg:mt-28">
-        <Reveal className="panel-ink overflow-hidden grid lg:grid-cols-2" y={30}>
-          <div className="p-10 lg:p-14 flex flex-col justify-center">
-            <div className="type-label text-white/45">Why this exists</div>
-
-            <h2 className="type-h2 text-white mt-4 optical-left text-balance">
-              College admissions shouldn&rsquo;t require a{" "}
-              <span className="type-editorial">paid consultant.</span>
+      {/* ── Closing ────────────────────────────────────────────────────────── */}
+      <section className="mt-16 lg:mt-24">
+        <div
+          className="overflow-hidden rounded-[var(--r-card)] px-6 py-12 sm:px-10 lg:px-14 lg:py-16"
+          style={{ background: "hsl(var(--rail))" }}
+        >
+          <div className="max-w-[56ch]">
+            <div className="type-label text-white/45">Why we exist</div>
+            <h2 className="type-h1 mt-3 text-white">
+              The information was never the hard part.{" "}
+              <span className="type-editorial text-white/70">
+                Access to it was.
+              </span>
             </h2>
-
-            <p className="type-body text-white/60 mt-6 max-w-[46ch]">
-              Expensive coaching services sell structure — deadlines, templates, curated
-              lists. None of it is secret. We publish the same structure, for free, to
-              everyone, permanently.
+            <p className="type-body mt-5 text-white/65">
+              A student with a $6,000 consultant and a student without one are
+              not separated by talent. They are separated by a list of deadlines
+              and a few templates. That gap is small, it is entirely fixable, and
+              closing it is the only thing this site does.
             </p>
-
-            <dl className="mt-10 grid sm:grid-cols-2 gap-x-8 gap-y-6">
-              {principles.map((p) => (
-                <div key={p.k}>
-                  <dt className="type-h4 text-white">{p.k}</dt>
-                  <dd className="type-small text-white/50 mt-1.5">{p.v}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <div className="mt-11">
-              <Link
-                to="/our-mission"
-                className="btn-secondary bg-white/[0.07] border-white/15 text-white hover:bg-white/[0.13]"
-              >
-                Read our mission
-                <ArrowRight className="h-4 w-4" strokeWidth={2} />
-              </Link>
-            </div>
+            <p className="type-body mt-4 text-white/65">
+              {allPrograms.length} summer programs, {totalScholarships} major
+              scholarships, and every playbook on this site are free and will
+              stay free. You never have to tell us who you are.
+            </p>
+            <Link
+              to="/our-mission"
+              className="mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[0.95rem] font-semibold text-foreground transition-transform hover:-translate-y-0.5"
+            >
+              Read the full mission
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
-
-          <div className="relative min-h-[360px] lg:min-h-0">
-            <EditorialImage
-              src="/images/mission-hall.jpg"
-              alt="A student walking alone down a school corridor toward daylight at the end of the hall."
-              fill
-              scrim
-              position="center 38%"
-            />
-          </div>
-        </Reveal>
+        </div>
       </section>
     </div>
   );
